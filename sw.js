@@ -1,5 +1,5 @@
 // Service worker: cache do "casco" do app para funcionar offline.
-const CACHE = 'santidade-v4';
+const CACHE = 'santidade-v5';
 const ASSETS = [
   '/',
   '/index.html',

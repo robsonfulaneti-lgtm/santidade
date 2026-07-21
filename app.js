@@ -54,7 +54,7 @@ async function loadData() {
     const server = await (await fetch('/api/entries')).json();
     if (server && typeof server === 'object') {
       for (const k in server) {
-        if (k === '_books') continue;
+        if (k === '_books' || k === '_studies') continue;
         data[k] = server[k];
       }
     }
@@ -333,9 +333,145 @@ async function addBook() {
 $('bookAdd').addEventListener('click', addBook);
 $('bookInput').addEventListener('keydown', (e) => { if (e.key === 'Enter') addBook(); });
 
+// ---- Estudos (vários por dia) ----
+const LS_STUDIES = 'santidade_studies';
+let studies = [];
+
+async function loadStudies() {
+  const local = loadLocal(LS_STUDIES, []);
+  studies = Array.isArray(local) ? local : [];
+  try {
+    const server = await (await fetch('/api/studies')).json();
+    if (Array.isArray(server) && server.length) {
+      const seen = new Set(studies.map((s) => s.id));
+      for (const s of server) if (s.id && !seen.has(s.id)) { studies.push(s); seen.add(s.id); }
+    }
+  } catch { /* servidor fora do ar: usa só o local */ }
+  saveLocal(LS_STUDIES, studies);
+}
+
+async function persistStudies() {
+  saveLocal(LS_STUDIES, studies);
+  try {
+    await fetch('/api/studies', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ studies }),
+    });
+  } catch (e) { console.warn('Servidor indisponível; estudos salvos apenas no aparelho.', e); }
+}
+
+function renderStudies() {
+  const list = $('studiesList');
+  $('studiesCount').textContent = studies.length;
+  list.innerHTML = '';
+
+  if (!studies.length) {
+    const p = document.createElement('p');
+    p.className = 'study-empty';
+    p.textContent = 'Nenhum estudo registrado ainda.\nUse o formulário acima quantas vezes quiser por dia.';
+    list.appendChild(p);
+    return;
+  }
+
+  // mais recentes primeiro, agrupados por dia
+  const ordered = [...studies].sort((a, b) => (b.date + (b.time || '')).localeCompare(a.date + (a.time || '')));
+  const groups = new Map();
+  for (const s of ordered) {
+    if (!groups.has(s.date)) groups.set(s.date, []);
+    groups.get(s.date).push(s);
+  }
+
+  for (const [date, items] of groups) {
+    const wrap = document.createElement('div');
+    const label = document.createElement('div');
+    label.className = 'study-day-label';
+    label.textContent = `${formatDatePt(date)} · ${items.length} estudo${items.length > 1 ? 's' : ''}`;
+    wrap.appendChild(label);
+
+    const group = document.createElement('div');
+    group.className = 'study-group';
+    for (const s of items) {
+      const card = document.createElement('div');
+      card.className = 'study-item';
+
+      const head = document.createElement('div');
+      head.className = 'study-item-head';
+      const ref = document.createElement('span');
+      ref.className = 'study-ref';
+      ref.textContent = s.capitulo ? `${s.livro} ${s.capitulo}` : s.livro;
+      head.appendChild(ref);
+      if (s.time) {
+        const t = document.createElement('span');
+        t.className = 'study-time';
+        t.textContent = s.time;
+        head.appendChild(t);
+      }
+      card.appendChild(head);
+
+      if (s.texto) {
+        const p = document.createElement('p');
+        p.className = 'study-text';
+        p.textContent = s.texto;
+        card.appendChild(p);
+      }
+
+      const del = document.createElement('button');
+      del.className = 'study-del';
+      del.textContent = '✕ remover';
+      del.addEventListener('click', async () => {
+        studies = studies.filter((x) => x.id !== s.id);
+        await persistStudies();
+        renderStudies();
+        toast('Estudo removido');
+      });
+      card.appendChild(del);
+
+      group.appendChild(card);
+    }
+    wrap.appendChild(group);
+    list.appendChild(wrap);
+  }
+}
+
+async function addStudy() {
+  const livro = $('studyLivro').value.trim();
+  const capitulo = $('studyCapitulo').value.trim();
+  const texto = $('studyTexto').value.trim();
+
+  if (!livro && !texto) { toast('Preencha ao menos o livro'); return; }
+
+  const now = new Date();
+  studies.push({
+    id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+    date: todayKey(),
+    time: `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`,
+    livro, capitulo, texto,
+  });
+
+  $('studyCapitulo').value = '';
+  $('studyTexto').value = '';
+  await persistStudies();
+  renderStudies();
+  toast('Estudo salvo ✓');
+}
+
+$('studyAdd').addEventListener('click', addStudy);
+
+// ---- Abas ----
+function switchView(view) {
+  document.querySelectorAll('.tab').forEach((t) => t.classList.toggle('active', t.dataset.view === view));
+  $('viewCalendario').hidden = view !== 'calendario';
+  $('viewEstudos').hidden = view !== 'estudos';
+  window.scrollTo(0, 0);
+}
+document.querySelectorAll('.tab').forEach((t) => {
+  t.addEventListener('click', () => switchView(t.dataset.view));
+});
+
 // ---- Backup: exportar / importar ----
 function exportBackup() {
-  const payload = { app: 'santidade', exportedAt: new Date().toISOString(), entries: data, books };
+  const payload = { app: 'santidade', exportedAt: new Date().toISOString(), entries: data, books, studies };
   const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
@@ -360,15 +496,24 @@ async function importBackup(file) {
         if (!seen.has(id)) { books.push(b); seen.add(id); }
       }
     }
+    if (Array.isArray(payload.studies)) {
+      const seenS = new Set(studies.map((s) => s.id));
+      for (const s of payload.studies) {
+        if (s.id && !seenS.has(s.id)) { studies.push(s); seenS.add(s.id); }
+      }
+    }
     saveLocal(LS_ENTRIES, data);
     saveLocal(LS_BOOKS, books);
+    saveLocal(LS_STUDIES, studies);
     // espelha no servidor se estiver acessível (best-effort)
     persistBooks();
+    persistStudies();
     try {
       for (const k in data) await saveEntry(k, data[k]);
     } catch {}
     render();
     renderBooks();
+    renderStudies();
     toast('Backup importado ✓');
   } catch {
     toast('Não consegui ler o arquivo');
@@ -385,9 +530,10 @@ $('importFile').addEventListener('change', (e) => {
 
 // ---- Init ----
 (async () => {
-  await Promise.all([loadData(), loadBooks()]);
+  await Promise.all([loadData(), loadBooks(), loadStudies()]);
   render();
   renderBooks();
+  renderStudies();
 })();
 
 // ---- PWA ----
