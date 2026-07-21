@@ -22,30 +22,66 @@
           <p id="streakInfo" class="streak">—</p>
         </div>
       </div>
+      <nav class="tabs" role="tablist">
+        <button id="tabCalendario" class="tab active" data-view="calendario" role="tab">Calendário</button>
+        <button id="tabEstudos" class="tab" data-view="estudos" role="tab">Estudos</button>
+      </nav>
+    </header>
+
+    <!-- ================= ABA CALENDÁRIO ================= -->
+    <section id="viewCalendario" class="view">
       <div class="month-nav">
         <button id="prevMonth" class="nav-btn" aria-label="Mês anterior">‹</button>
         <span id="monthLabel" class="month-label">—</span>
         <button id="nextMonth" class="nav-btn" aria-label="Próximo mês">›</button>
       </div>
-    </header>
 
-    <div class="weekdays">
-      <span>D</span><span>S</span><span>T</span><span>Q</span><span>Q</span><span>S</span><span>S</span>
-    </div>
-    <main id="calendar" class="calendar"></main>
-
-    <p class="hint">Toque em um dia para registrar. Verde = tudo feito · Ponto dourado = registro parcial.</p>
-
-    <section class="books">
-      <div class="books-head">
-        <h2>📕 Livros terminados</h2>
-        <span id="booksCount" class="books-count">0</span>
+      <div class="weekdays">
+        <span>D</span><span>S</span><span>T</span><span>Q</span><span>Q</span><span>S</span><span>S</span>
       </div>
-      <div class="book-add">
-        <input id="bookInput" type="text" placeholder="Nome do livro que terminei..." autocomplete="off" />
-        <button id="bookAdd" class="btn primary">Adicionar</button>
+      <main id="calendar" class="calendar"></main>
+
+      <p class="hint">Toque em um dia para registrar. Verde = tudo feito · Ponto dourado = registro parcial.</p>
+
+      <section class="books">
+        <div class="books-head">
+          <h2>📕 Livros terminados</h2>
+          <span id="booksCount" class="books-count">0</span>
+        </div>
+        <div class="book-add">
+          <input id="bookInput" type="text" placeholder="Nome do livro que terminei..." autocomplete="off" />
+          <button id="bookAdd" class="btn primary">Adicionar</button>
+        </div>
+        <ul id="booksList" class="books-list"></ul>
+      </section>
+    </section>
+
+    <!-- ================= ABA ESTUDOS ================= -->
+    <section id="viewEstudos" class="view" hidden>
+      <div class="study-form">
+        <h2>✍️ Novo estudo</h2>
+        <div class="study-row">
+          <label class="field grow">
+            <span>Livro</span>
+            <input id="studyLivro" type="text" placeholder="Ex.: João" autocomplete="off" />
+          </label>
+          <label class="field narrow">
+            <span>Capítulo</span>
+            <input id="studyCapitulo" type="text" inputmode="numeric" placeholder="3" autocomplete="off" />
+          </label>
+        </div>
+        <label class="field">
+          <span>O que eu entendi</span>
+          <textarea id="studyTexto" rows="4" placeholder="Escreva aqui o que você entendeu..."></textarea>
+        </label>
+        <button id="studyAdd" class="btn primary full">Salvar estudo</button>
       </div>
-      <ul id="booksList" class="books-list"></ul>
+
+      <div class="studies-head">
+        <h2>📔 Meus estudos</h2>
+        <span id="studiesCount" class="books-count">0</span>
+      </div>
+      <div id="studiesList" class="studies-list"></div>
     </section>
 
     <footer class="backup">

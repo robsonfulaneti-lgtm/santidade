@@ -187,6 +187,68 @@ body {
 .backup { display: flex; gap: 8px; margin-top: 26px; }
 .btn.small { flex: 1; padding: 12px; font-size: 13px; font-weight: 600; }
 
+/* ---- Abas ---- */
+.tabs {
+  display: flex; gap: 6px; padding: 5px;
+  background: var(--panel); border: 1px solid var(--line); border-radius: 14px;
+}
+.tab {
+  flex: 1; border: none; border-radius: 10px; padding: 11px;
+  background: transparent; color: var(--muted);
+  font: inherit; font-size: 14px; font-weight: 700; cursor: pointer;
+  transition: background .15s, color .15s;
+}
+.tab.active { background: var(--panel-2); color: var(--ink); }
+.tab:active { transform: scale(.97); }
+.view[hidden] { display: none; }
+#viewCalendario .month-nav { margin-bottom: 16px; }
+
+/* ---- Formulário de estudo ---- */
+.study-form {
+  background: var(--panel); border: 1px solid var(--line);
+  border-radius: var(--radius); padding: 16px; margin-bottom: 24px;
+}
+.study-form h2 { margin: 0 0 14px; font-size: 16px; }
+.study-row { display: flex; gap: 10px; }
+.field { display: block; margin-bottom: 12px; }
+.field.grow { flex: 1; }
+.field.narrow { flex: 0 0 96px; }
+.field > span {
+  display: block; margin-bottom: 6px;
+  color: var(--muted); font-size: 12px; font-weight: 600;
+}
+.field input, .field textarea {
+  width: 100%; background: var(--bg); color: var(--ink);
+  border: 1px solid var(--line); border-radius: 12px;
+  padding: 12px; font: inherit; font-size: 15px; resize: vertical;
+}
+.field input::placeholder, .field textarea::placeholder { color: var(--muted); }
+.btn.full { width: 100%; }
+
+/* ---- Lista de estudos ---- */
+.studies-head { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+.studies-head h2 { margin: 0; font-size: 16px; }
+.studies-list { display: flex; flex-direction: column; gap: 18px; }
+.study-day-label {
+  color: var(--gold); font-size: 12px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: .5px; margin-bottom: 8px;
+}
+.study-group { display: flex; flex-direction: column; gap: 8px; }
+.study-item {
+  background: var(--panel); border: 1px solid var(--line);
+  border-radius: 13px; padding: 14px;
+}
+.study-item-head { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; }
+.study-ref { font-weight: 700; font-size: 15px; }
+.study-time { color: var(--muted); font-size: 12px; flex: none; }
+.study-text { margin: 8px 0 0; font-size: 14px; line-height: 1.55; color: var(--ink); white-space: pre-wrap; }
+.study-del {
+  border: none; background: transparent; color: var(--muted);
+  font-size: 13px; cursor: pointer; padding: 6px 0 0; margin-top: 4px;
+}
+.study-del:active { color: var(--danger); }
+.study-empty { color: var(--muted); font-size: 14px; text-align: center; padding: 20px; }
+
 .sheet-actions { display: flex; gap: 10px; margin-top: 18px; }
 .btn { flex: 1; border: none; border-radius: 13px; padding: 14px; font-size: 15px; font-weight: 700; cursor: pointer; }
 .btn:active { transform: scale(.97); }
