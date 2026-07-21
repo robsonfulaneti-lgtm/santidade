@@ -1,7 +1,7 @@
 // Service worker: cache do "casco" do app para funcionar offline.
 // Caminhos relativos para funcionar tanto na raiz (servidor local)
 // quanto numa subpasta (GitHub Pages: /santidade/).
-const CACHE = 'santidade-v5';
+const CACHE = 'santidade-v6';
 const ASSETS = [
   './',
   './index.html',
