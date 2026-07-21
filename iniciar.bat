@@ -20,4 +20,12 @@ echo.
 echo  Copie essa URL e abra no celular.
 echo  Para parar o app, feche as duas janelas.
 echo.
+echo  ---------------------------------------------------------------
+echo  Se o endereco .trycloudflare.com nao abrir no celular
+echo  (as vezes o servico fica instavel), use o plano B:
+echo.
+echo     iniciar-alternativo.bat
+echo.
+echo  ---------------------------------------------------------------
+echo.
 pause
