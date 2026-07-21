@@ -1,0 +1,11 @@
+# dados pessoais (ficam só na sua máquina)
+data.json
+
+# binário do túnel (baixe pelo README)
+cloudflared.exe
+
+# logs
+tunnel.log
+*.log
+
+node_modules/
