@@ -1,19 +1,37 @@
 # Santidade · Diário ✦
 
-PWA de hábitos diários com calendário mensal. Feito para viver **no celular** (local-first): os dados ficam no `localStorage` do aparelho; o servidor é só backup/sync e serve para instalar o app.
+**App no ar:** https://robsonfulaneti-lgtm.github.io/santidade/
 
-## Hábitos registrados por dia
+PWA de hábitos diários com calendário mensal. Feito para viver **no celular** (local-first): os dados ficam no `localStorage` do aparelho. Não precisa de servidor — está hospedado no GitHub Pages, com endereço fixo.
+
+## Atualizar o app
+
+```
+publicar.bat
+```
+
+Envia a `main` e publica a pasta `public/` na branch `gh-pages` (que o GitHub Pages serve). Em 1–2 minutos está no ar; no celular o app troca de versão sozinho ao abrir e fechar.
+
+> Ao mudar qualquer arquivo de `public/`, **incremente a versão do cache** em `public/sw.js` (`santidade-vN`), senão o service worker continua servindo a versão antiga.
+
+## O que o app tem
+
+**Aba Calendário** — hábitos registrados por dia:
 
 - 📖 **Li a Bíblia** — com campo de texto do que leu
 - ⏳ **Jejum** — com campo de horas
 - 📚 **Li 1 capítulo de livro** — com campo de texto
 - 🙏 **Momento de oração**
 
-Além disso: lista separada de **📕 livros terminados**, sequência de dias (🔥 streak) e **exportar/importar backup** em JSON.
+**Aba Estudos** — vários registros por dia, cada um com **livro**, **capítulo** e **o que entendi**, agrupados por data e com horário.
 
-## Como rodar
+Além disso: lista de **📕 livros terminados**, sequência de dias (🔥 streak) e **exportar/importar backup** em JSON.
 
-Requisitos: [Node.js](https://nodejs.org) e, para acesso pelo celular, o [cloudflared](https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-windows-amd64.exe) (salve como `cloudflared.exe` na raiz do projeto).
+## Rodar localmente (opcional — só para desenvolver)
+
+O servidor Node é **opcional**: serve os arquivos e guarda uma cópia dos dados em `data.json`. O app funciona sem ele.
+
+Requisitos: [Node.js](https://nodejs.org) e, para acesso pelo celular via túnel, o [cloudflared](https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-windows-amd64.exe) (salve como `cloudflared.exe` na raiz).
 
 ```
 iniciar.bat
