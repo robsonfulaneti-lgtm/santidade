@@ -28,6 +28,16 @@ node server.js                                     # http://localhost:5173
 
 Abra a URL `https://...trycloudflare.com` no celular → menu do navegador → **Adicionar à tela inicial**. Depois de instalado, o app funciona offline para sempre; o servidor só é necessário para instalar (a URL do túnel muda a cada reinício).
 
+### Se o link não abrir
+
+O túnel rápido da Cloudflare é instável: o processo pode morrer sozinho (o endereço passa a responder **530**) e às vezes o DNS do subdomínio demora ou nem chega a ser publicado. Nesses casos:
+
+1. Confira se o servidor está de pé: `curl http://localhost:5173` deve responder 200.
+2. Reinicie só o túnel — ele gera um endereço novo.
+3. Se a Cloudflare estiver fora do ar, use `iniciar-alternativo.bat` (localtunnel). Ele pede uma senha na primeira visita, que é o IP público do PC.
+
+Sempre teste o endereço novo antes de usá-lo no celular — `nslookup` dá falso positivo, prefira uma requisição HTTP de verdade.
+
 ## Estrutura
 
 ```
