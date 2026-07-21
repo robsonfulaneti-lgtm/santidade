@@ -45,35 +45,47 @@ function saveLocal(key, val) {
   try { localStorage.setItem(key, JSON.stringify(val)); } catch {}
 }
 
+// Servidor é opcional: no GitHub Pages não existe /api, e tudo bem.
+// Estas funções nunca lançam erro — devolvem null quando não há servidor.
+async function apiGet(path) {
+  try {
+    const r = await fetch(path, { cache: 'no-store' });
+    if (!r.ok) return null;
+    return await r.json();
+  } catch { return null; }
+}
+async function apiPut(path, body) {
+  try {
+    const r = await fetch(path, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    });
+    return r.ok;
+  } catch { return false; }
+}
+
 async function loadData() {
   // 1) sempre carrega o que está salvo no aparelho (garantido, offline)
   const local = loadLocal(LS_ENTRIES, {});
   data = { ...local };
   // 2) tenta buscar do servidor e mesclar (servidor prevalece em conflitos)
-  try {
-    const server = await (await fetch('/api/entries')).json();
-    if (server && typeof server === 'object') {
-      for (const k in server) {
-        if (k === '_books' || k === '_studies') continue;
-        data[k] = server[k];
-      }
+  const server = await apiGet('./api/entries');
+  if (server && typeof server === 'object') {
+    for (const k in server) {
+      if (k === '_books' || k === '_studies') continue;
+      data[k] = server[k];
     }
-  } catch { /* servidor fora do ar: seguimos só com o local */ }
+  }
   // 3) grava o resultado mesclado de volta no aparelho
   saveLocal(LS_ENTRIES, data);
 }
 
 async function saveEntry(dateKey, entry) {
-  // grava no aparelho ANTES de tudo (nunca se perde, mesmo com servidor fora)
+  // grava no aparelho ANTES de tudo (nunca se perde, mesmo sem servidor)
   saveLocal(LS_ENTRIES, data);
-  // tenta espelhar no servidor (best-effort)
-  try {
-    await fetch('/api/entries', {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ date: dateKey, entry }),
-    });
-  } catch (e) { console.warn('Servidor indisponível; salvo apenas no aparelho.', e); }
+  // espelha no servidor quando ele existir (best-effort)
+  await apiPut('./api/entries', { date: dateKey, entry });
 }
 
 // ---- Streak (dias consecutivos até hoje com algo registrado) ----
@@ -255,28 +267,20 @@ let books = [];
 async function loadBooks() {
   const local = loadLocal(LS_BOOKS, []);
   books = Array.isArray(local) ? local : [];
-  try {
-    const server = await (await fetch('/api/books')).json();
-    if (Array.isArray(server) && server.length) {
-      // união: mantém os locais e adiciona os do servidor que faltarem
-      const seen = new Set(books.map((b) => b.title + '|' + b.date));
-      for (const b of server) {
-        const id = b.title + '|' + b.date;
-        if (!seen.has(id)) { books.push(b); seen.add(id); }
-      }
+  const server = await apiGet('./api/books');
+  if (Array.isArray(server) && server.length) {
+    // união: mantém os locais e adiciona os do servidor que faltarem
+    const seen = new Set(books.map((b) => b.title + '|' + b.date));
+    for (const b of server) {
+      const id = b.title + '|' + b.date;
+      if (!seen.has(id)) { books.push(b); seen.add(id); }
     }
-  } catch { /* servidor fora do ar: usa só o local */ }
+  }
   saveLocal(LS_BOOKS, books);
 }
 async function persistBooks() {
   saveLocal(LS_BOOKS, books);
-  try {
-    await fetch('/api/books', {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ books }),
-    });
-  } catch (e) { console.warn('Servidor indisponível; livros salvos apenas no aparelho.', e); }
+  await apiPut('./api/books', { books });
 }
 
 function renderBooks() {
@@ -340,25 +344,17 @@ let studies = [];
 async function loadStudies() {
   const local = loadLocal(LS_STUDIES, []);
   studies = Array.isArray(local) ? local : [];
-  try {
-    const server = await (await fetch('/api/studies')).json();
-    if (Array.isArray(server) && server.length) {
-      const seen = new Set(studies.map((s) => s.id));
-      for (const s of server) if (s.id && !seen.has(s.id)) { studies.push(s); seen.add(s.id); }
-    }
-  } catch { /* servidor fora do ar: usa só o local */ }
+  const server = await apiGet('./api/studies');
+  if (Array.isArray(server) && server.length) {
+    const seen = new Set(studies.map((s) => s.id));
+    for (const s of server) if (s.id && !seen.has(s.id)) { studies.push(s); seen.add(s.id); }
+  }
   saveLocal(LS_STUDIES, studies);
 }
 
 async function persistStudies() {
   saveLocal(LS_STUDIES, studies);
-  try {
-    await fetch('/api/studies', {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ studies }),
-    });
-  } catch (e) { console.warn('Servidor indisponível; estudos salvos apenas no aparelho.', e); }
+  await apiPut('./api/studies', { studies });
 }
 
 function renderStudies() {
@@ -538,5 +534,5 @@ $('importFile').addEventListener('change', (e) => {
 
 // ---- PWA ----
 if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('/sw.js').catch(() => {});
+  navigator.serviceWorker.register('./sw.js').catch(() => {});
 }
