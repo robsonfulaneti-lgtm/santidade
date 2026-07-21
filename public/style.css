@@ -249,6 +249,98 @@ body {
 .study-del:active { color: var(--danger); }
 .study-empty { color: var(--muted); font-size: 14px; text-align: center; padding: 20px; }
 
+/* ---- Aba Paulo ---- */
+.paulo-head { margin-bottom: 20px; }
+.paulo-head h2 { margin: 0 0 6px; font-size: 18px; }
+.paulo-sub { margin: 0 0 14px; color: var(--muted); font-size: 13px; line-height: 1.5; }
+
+.progress { display: flex; align-items: center; gap: 10px; }
+.progress-track {
+  flex: 1; height: 8px; border-radius: 4px;
+  background: var(--panel-2); overflow: hidden;
+}
+.progress-fill {
+  display: block; height: 100%; width: 0;
+  background: linear-gradient(90deg, var(--indigo), var(--green));
+  border-radius: 4px; transition: width .35s ease;
+}
+.progress-label { color: var(--muted); font-size: 12px; font-weight: 700; flex: none; }
+
+.paulo-etapas { display: flex; flex-direction: column; gap: 10px; }
+.etapa {
+  border: 1px solid var(--line); border-radius: var(--radius);
+  background: var(--panel); overflow: hidden;
+}
+.etapa.completa { border-color: var(--green); }
+.etapa-head {
+  width: 100%; display: flex; align-items: center; gap: 10px;
+  padding: 14px; border: none; background: transparent;
+  color: var(--ink); font: inherit; text-align: left; cursor: pointer;
+}
+.etapa-head:active { background: var(--panel-2); }
+.etapa-info { flex: 1; min-width: 0; }
+.etapa-num {
+  display: block; color: var(--gold); font-size: 11px;
+  font-weight: 700; text-transform: uppercase; letter-spacing: .5px;
+}
+.etapa-num em { font-style: italic; text-transform: none; letter-spacing: 0; color: var(--muted); }
+.etapa-titulo { display: block; font-size: 15px; font-weight: 600; margin-top: 3px; }
+.etapa-badge {
+  flex: none; background: var(--panel-2); color: var(--muted);
+  border-radius: 11px; padding: 3px 9px; font-size: 12px; font-weight: 700;
+}
+.etapa.completa .etapa-badge { background: var(--green-dim); color: var(--green); }
+.etapa-seta { flex: none; color: var(--muted); font-size: 12px; }
+
+.etapa-corpo { padding: 0 14px 14px; }
+.etapa-corpo[hidden] { display: none; }
+.etapa-contexto {
+  margin: 0 0 14px; padding: 12px 12px 12px 28px;
+  background: var(--bg); border-radius: 12px;
+  color: var(--muted); font-size: 13px; line-height: 1.6;
+}
+.etapa-contexto li { margin: 0; }
+
+.paulo-item {
+  border: 1px solid var(--line); border-radius: 13px;
+  background: var(--bg); padding: 12px; margin-bottom: 8px;
+}
+.paulo-item.on { border-color: var(--green); background: linear-gradient(160deg, #1d2b33, var(--bg)); }
+.paulo-item:last-child { margin-bottom: 0; }
+.paulo-row { display: flex; align-items: center; gap: 10px; }
+.paulo-item .check { width: 24px; height: 24px; border-radius: 7px; font-size: 13px; cursor: pointer; }
+.paulo-item.on .check { background: var(--green); border-color: var(--green); color: #08281f; }
+.paulo-info { flex: 1; min-width: 0; }
+.paulo-ref { display: block; font-weight: 700; font-size: 14px; }
+.paulo-desc { display: block; color: var(--muted); font-size: 12px; margin-top: 2px; }
+.paulo-tag {
+  flex: none; font-size: 10px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: .4px; padding: 3px 7px; border-radius: 6px;
+}
+.paulo-tag.leitura { background: rgba(124, 108, 255, .18); color: #a99cff; }
+.paulo-tag.carta { background: rgba(232, 196, 106, .16); color: var(--gold); }
+.paulo-lapis {
+  flex: none; border: none; background: var(--panel-2); color: var(--muted);
+  width: 30px; height: 30px; border-radius: 9px; font-size: 14px; cursor: pointer;
+}
+.paulo-lapis.tem-nota { background: var(--gold); color: #201d3a; }
+.paulo-nota {
+  width: 100%; margin-top: 10px; min-height: 70px; resize: vertical;
+  background: var(--panel); color: var(--ink);
+  border: 1px solid var(--line); border-radius: 11px;
+  padding: 10px 12px; font: inherit; font-size: 14px; line-height: 1.5;
+}
+.paulo-nota::placeholder { color: var(--muted); }
+.paulo-nota[hidden] { display: none; }
+
+.paulo-tip {
+  margin-top: 18px; padding: 14px;
+  background: var(--panel); border: 1px dashed var(--line);
+  border-radius: 12px; color: var(--muted);
+  font-size: 13px; line-height: 1.6;
+}
+.paulo-tip strong { color: var(--ink); }
+
 .sheet-actions { display: flex; gap: 10px; margin-top: 18px; }
 .btn { flex: 1; border: none; border-radius: 13px; padding: 14px; font-size: 15px; font-weight: 700; cursor: pointer; }
 .btn:active { transform: scale(.97); }

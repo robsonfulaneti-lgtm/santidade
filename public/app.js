@@ -73,7 +73,7 @@ async function loadData() {
   const server = await apiGet('./api/entries');
   if (server && typeof server === 'object') {
     for (const k in server) {
-      if (k === '_books' || k === '_studies') continue;
+      if (k === '_books' || k === '_studies' || k === '_paulo') continue;
       data[k] = server[k];
     }
   }
@@ -454,11 +454,264 @@ async function addStudy() {
 
 $('studyAdd').addEventListener('click', addStudy);
 
+// ---- Guia de estudo: a vida de Paulo ----
+// Cronologia cruzando Atos com as cartas.
+const PAULO_ETAPAS = [
+  {
+    id: 'e0',
+    numero: 'Etapa 0',
+    titulo: 'Conversão e período silencioso',
+    contexto: ['Período na Arábia e em Tarso (sem cartas conhecidas deste período)'],
+    itens: [
+      { id: 'e0-at9', tipo: 'leitura', ref: 'Atos 9', desc: 'Conversão de Paulo a caminho de Damasco' },
+    ],
+  },
+  {
+    id: 'e1',
+    numero: 'Etapa 1',
+    titulo: 'Primeira viagem missionária',
+    contexto: [
+      'Antioquia da Síria → Chipre → Galácia (Antioquia da Pisídia, Icônio, Listra, Derbe)',
+      'Volta para Antioquia da Síria',
+    ],
+    itens: [
+      { id: 'e1-at13-14', tipo: 'leitura', ref: 'Atos 13–14', desc: 'A primeira viagem' },
+      { id: 'e1-gl', tipo: 'carta', ref: 'Gálatas', desc: '~48–49 d.C.' },
+    ],
+  },
+  {
+    id: 'e2',
+    numero: 'Etapa 2',
+    titulo: 'Concílio de Jerusalém',
+    contexto: [
+      'Debate sobre gentios e a lei judaica',
+      'Contexto importante para entender Gálatas',
+    ],
+    itens: [
+      { id: 'e2-at15', tipo: 'leitura', ref: 'Atos 15', desc: 'O concílio' },
+    ],
+  },
+  {
+    id: 'e3',
+    numero: 'Etapa 3',
+    titulo: 'Segunda viagem missionária',
+    contexto: [
+      'Revisita igrejas da Galácia',
+      'Macedônia: Filipos, Tessalônica, Bereia',
+      'Acaia: Atenas e Corinto (fica 18 meses)',
+    ],
+    itens: [
+      { id: 'e3-at15-18', tipo: 'leitura', ref: 'Atos 15:36 – 18:22', desc: 'A segunda viagem' },
+      { id: 'e3-1ts', tipo: 'carta', ref: '1 Tessalonicenses', desc: '~50–51 d.C. · de Corinto' },
+      { id: 'e3-2ts', tipo: 'carta', ref: '2 Tessalonicenses', desc: '~50–51 d.C. · de Corinto' },
+    ],
+  },
+  {
+    id: 'e4',
+    numero: 'Etapa 4',
+    titulo: 'Terceira viagem missionária',
+    contexto: [
+      'Éfeso (cerca de 3 anos, ministério mais longo em uma cidade)',
+      'Depois: Macedônia novamente',
+      'Depois: Corinto novamente (3 meses)',
+    ],
+    itens: [
+      { id: 'e4-at18-21', tipo: 'leitura', ref: 'Atos 18:23 – 21:16', desc: 'A terceira viagem' },
+      { id: 'e4-1co', tipo: 'carta', ref: '1 Coríntios', desc: '~53–54 d.C. · de Éfeso' },
+      { id: 'e4-2co', tipo: 'carta', ref: '2 Coríntios', desc: '~55–56 d.C. · da Macedônia' },
+      { id: 'e4-rm', tipo: 'carta', ref: 'Romanos', desc: '~56–57 d.C. · de Corinto' },
+    ],
+  },
+  {
+    id: 'e5',
+    numero: 'Etapa 5',
+    titulo: 'Prisão e viagem a Roma',
+    contexto: [
+      'Prisão em Jerusalém',
+      'Prisão em Cesareia (2 anos)',
+      'Apelação a César, naufrágio em Malta',
+      'Chegada a Roma, prisão domiciliar (2 anos) — fim de Atos',
+    ],
+    itens: [
+      { id: 'e5-at21-28', tipo: 'leitura', ref: 'Atos 21–28', desc: 'Prisão e viagem a Roma' },
+      { id: 'e5-ef', tipo: 'carta', ref: 'Efésios', desc: '~60–62 d.C. · da prisão' },
+      { id: 'e5-fp', tipo: 'carta', ref: 'Filipenses', desc: '~60–62 d.C. · da prisão' },
+      { id: 'e5-cl', tipo: 'carta', ref: 'Colossenses', desc: '~60–62 d.C. · da prisão' },
+      { id: 'e5-fm', tipo: 'carta', ref: 'Filemom', desc: '~60–62 d.C. · da prisão' },
+    ],
+  },
+  {
+    id: 'e6',
+    numero: 'Etapa 6',
+    titulo: 'Depois de Atos',
+    nota: 'tradição, não narrado no livro',
+    contexto: [
+      'Possível soltura e novas viagens (talvez até a Espanha)',
+      'Nova prisão em Roma',
+    ],
+    itens: [
+      { id: 'e6-1tm', tipo: 'carta', ref: '1 Timóteo', desc: '~62–64 d.C. · período de liberdade' },
+      { id: 'e6-tt', tipo: 'carta', ref: 'Tito', desc: '~62–64 d.C. · período de liberdade' },
+      { id: 'e6-2tm', tipo: 'carta', ref: '2 Timóteo', desc: '~64–67 d.C. · última carta, segunda prisão' },
+    ],
+  },
+];
+
+const LS_PAULO = 'santidade_paulo';
+let paulo = {};              // { 'e1-gl': { done: true, nota: '...' } }
+let pauloAbertas = new Set(); // etapas expandidas
+
+async function loadPaulo() {
+  const local = loadLocal(LS_PAULO, {});
+  paulo = local && typeof local === 'object' ? local : {};
+  const server = await apiGet('./api/paulo');
+  if (server && typeof server === 'object') {
+    for (const k in server) if (!paulo[k]) paulo[k] = server[k];
+  }
+  saveLocal(LS_PAULO, paulo);
+}
+
+async function persistPaulo() {
+  saveLocal(LS_PAULO, paulo);
+  await apiPut('./api/paulo', { paulo });
+}
+
+const totalPauloItens = () => PAULO_ETAPAS.reduce((n, e) => n + e.itens.length, 0);
+const feitosNaEtapa = (etapa) => etapa.itens.filter((i) => paulo[i.id]?.done).length;
+
+function updatePauloProgress() {
+  const total = totalPauloItens();
+  const feitos = PAULO_ETAPAS.reduce((n, e) => n + feitosNaEtapa(e), 0);
+  $('pauloProgress').textContent = `${feitos} de ${total}`;
+  $('pauloBarFill').style.width = total ? `${(feitos / total) * 100}%` : '0%';
+}
+
+function renderPaulo() {
+  const wrap = $('pauloEtapas');
+  wrap.innerHTML = '';
+
+  for (const etapa of PAULO_ETAPAS) {
+    const feitos = feitosNaEtapa(etapa);
+    const total = etapa.itens.length;
+    const completa = feitos === total;
+    const aberta = pauloAbertas.has(etapa.id);
+
+    const card = document.createElement('section');
+    card.className = 'etapa' + (completa ? ' completa' : '');
+
+    // cabeçalho clicável (abre/fecha)
+    const head = document.createElement('button');
+    head.className = 'etapa-head';
+    head.setAttribute('aria-expanded', String(aberta));
+    head.innerHTML = `
+      <div class="etapa-info">
+        <span class="etapa-num">${etapa.numero}${etapa.nota ? ` · <em>${etapa.nota}</em>` : ''}</span>
+        <span class="etapa-titulo">${etapa.titulo}</span>
+      </div>
+      <span class="etapa-badge">${feitos}/${total}</span>
+      <span class="etapa-seta">${aberta ? '▾' : '▸'}</span>`;
+    head.addEventListener('click', () => {
+      if (pauloAbertas.has(etapa.id)) pauloAbertas.delete(etapa.id);
+      else pauloAbertas.add(etapa.id);
+      renderPaulo();
+    });
+    card.appendChild(head);
+
+    const corpo = document.createElement('div');
+    corpo.className = 'etapa-corpo';
+    corpo.hidden = !aberta;
+
+    if (etapa.contexto?.length) {
+      const ul = document.createElement('ul');
+      ul.className = 'etapa-contexto';
+      for (const c of etapa.contexto) {
+        const li = document.createElement('li');
+        li.textContent = c;
+        ul.appendChild(li);
+      }
+      corpo.appendChild(ul);
+    }
+
+    for (const item of etapa.itens) {
+      const estado = paulo[item.id] || {};
+      const el = document.createElement('div');
+      el.className = 'paulo-item' + (estado.done ? ' on' : '');
+
+      const row = document.createElement('div');
+      row.className = 'paulo-row';
+
+      const check = document.createElement('button');
+      check.className = 'check';
+      check.textContent = '✓';
+      check.setAttribute('aria-label', estado.done ? 'Desmarcar' : 'Marcar como lido');
+      check.addEventListener('click', async (ev) => {
+        ev.stopPropagation();
+        const atual = paulo[item.id] || {};
+        paulo[item.id] = { ...atual, done: !atual.done };
+        if (!paulo[item.id].done && !paulo[item.id].nota) delete paulo[item.id];
+        await persistPaulo();
+        renderPaulo();
+      });
+
+      const info = document.createElement('div');
+      info.className = 'paulo-info';
+      info.innerHTML = `
+        <span class="paulo-ref">${item.ref}</span>
+        <span class="paulo-desc">${item.desc}</span>`;
+
+      const tag = document.createElement('span');
+      tag.className = 'paulo-tag ' + item.tipo;
+      tag.textContent = item.tipo === 'carta' ? 'Carta' : 'Leitura';
+
+      const lapis = document.createElement('button');
+      lapis.className = 'paulo-lapis' + (estado.nota ? ' tem-nota' : '');
+      lapis.textContent = '✎';
+      lapis.setAttribute('aria-label', 'Comentário');
+
+      row.append(check, info, tag, lapis);
+      el.appendChild(row);
+
+      const ta = document.createElement('textarea');
+      ta.className = 'paulo-nota';
+      ta.placeholder = 'Meu comentário sobre esta leitura...';
+      ta.value = estado.nota || '';
+      ta.hidden = !estado.nota;
+      let timer;
+      const salvar = async () => {
+        const texto = ta.value.trim();
+        const atual = paulo[item.id] || {};
+        if (texto) paulo[item.id] = { ...atual, nota: texto };
+        else if (atual.done) paulo[item.id] = { done: true };
+        else delete paulo[item.id];
+        await persistPaulo();
+        lapis.classList.toggle('tem-nota', !!texto);
+      };
+      ta.addEventListener('input', () => { clearTimeout(timer); timer = setTimeout(salvar, 600); });
+      ta.addEventListener('blur', () => { clearTimeout(timer); salvar(); });
+      el.appendChild(ta);
+
+      lapis.addEventListener('click', (ev) => {
+        ev.stopPropagation();
+        ta.hidden = !ta.hidden;
+        if (!ta.hidden) ta.focus();
+      });
+
+      corpo.appendChild(el);
+    }
+
+    card.appendChild(corpo);
+    wrap.appendChild(card);
+  }
+
+  updatePauloProgress();
+}
+
 // ---- Abas ----
 function switchView(view) {
   document.querySelectorAll('.tab').forEach((t) => t.classList.toggle('active', t.dataset.view === view));
   $('viewCalendario').hidden = view !== 'calendario';
   $('viewEstudos').hidden = view !== 'estudos';
+  $('viewPaulo').hidden = view !== 'paulo';
   window.scrollTo(0, 0);
 }
 document.querySelectorAll('.tab').forEach((t) => {
@@ -467,7 +720,7 @@ document.querySelectorAll('.tab').forEach((t) => {
 
 // ---- Backup: exportar / importar ----
 function exportBackup() {
-  const payload = { app: 'santidade', exportedAt: new Date().toISOString(), entries: data, books, studies };
+  const payload = { app: 'santidade', exportedAt: new Date().toISOString(), entries: data, books, studies, paulo };
   const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
@@ -498,18 +751,24 @@ async function importBackup(file) {
         if (s.id && !seenS.has(s.id)) { studies.push(s); seenS.add(s.id); }
       }
     }
+    if (payload.paulo && typeof payload.paulo === 'object') {
+      for (const k in payload.paulo) if (!paulo[k]) paulo[k] = payload.paulo[k];
+    }
     saveLocal(LS_ENTRIES, data);
     saveLocal(LS_BOOKS, books);
     saveLocal(LS_STUDIES, studies);
+    saveLocal(LS_PAULO, paulo);
     // espelha no servidor se estiver acessível (best-effort)
     persistBooks();
     persistStudies();
+    persistPaulo();
     try {
       for (const k in data) await saveEntry(k, data[k]);
     } catch {}
     render();
     renderBooks();
     renderStudies();
+    renderPaulo();
     toast('Backup importado ✓');
   } catch {
     toast('Não consegui ler o arquivo');
@@ -526,10 +785,11 @@ $('importFile').addEventListener('change', (e) => {
 
 // ---- Init ----
 (async () => {
-  await Promise.all([loadData(), loadBooks(), loadStudies()]);
+  await Promise.all([loadData(), loadBooks(), loadStudies(), loadPaulo()]);
   render();
   renderBooks();
   renderStudies();
+  renderPaulo();
 })();
 
 // ---- PWA ----

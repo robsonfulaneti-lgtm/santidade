@@ -25,6 +25,7 @@
       <nav class="tabs" role="tablist">
         <button id="tabCalendario" class="tab active" data-view="calendario" role="tab">Calendário</button>
         <button id="tabEstudos" class="tab" data-view="estudos" role="tab">Estudos</button>
+        <button id="tabPaulo" class="tab" data-view="paulo" role="tab">Paulo</button>
       </nav>
     </header>
 
@@ -82,6 +83,26 @@
         <span id="studiesCount" class="books-count">0</span>
       </div>
       <div id="studiesList" class="studies-list"></div>
+    </section>
+
+    <!-- ================= ABA PAULO ================= -->
+    <section id="viewPaulo" class="view" hidden>
+      <div class="paulo-head">
+        <h2>🕊️ A vida de Paulo</h2>
+        <p class="paulo-sub">Cronologia cruzando Atos com as cartas. Marque conforme for lendo e escreva seus comentários.</p>
+        <div class="progress">
+          <div class="progress-track"><span id="pauloBarFill" class="progress-fill"></span></div>
+          <span id="pauloProgress" class="progress-label">0 de 0</span>
+        </div>
+      </div>
+
+      <div id="pauloEtapas" class="paulo-etapas"></div>
+
+      <p class="paulo-tip">
+        💡 <strong>Dica de uso:</strong> leia o trecho de Atos da etapa e, em seguida,
+        a(s) carta(s) daquele período. Assim você acompanha Paulo “em tempo real”,
+        entendendo o contexto de cada escrito.
+      </p>
     </section>
 
     <footer class="backup">

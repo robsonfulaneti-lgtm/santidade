@@ -25,6 +25,8 @@ Envia a `main` e publica a pasta `public/` na branch `gh-pages` (que o GitHub Pa
 
 **Aba Estudos** — vários registros por dia, cada um com **livro**, **capítulo** e **o que entendi**, agrupados por data e com horário.
 
+**Aba Paulo** — guia de estudo da vida de Paulo em 7 etapas, cruzando a cronologia de Atos com as cartas (19 itens). Cada leitura e carta tem marcação de concluído e campo de comentário próprio, com barra de progresso geral e por etapa.
+
 Além disso: lista de **📕 livros terminados**, sequência de dias (🔥 streak) e **exportar/importar backup** em JSON.
 
 ## Rodar localmente (opcional — só para desenvolver)

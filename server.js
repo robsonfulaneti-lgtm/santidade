@@ -42,6 +42,30 @@ function sendJson(res, code, obj) {
 const server = http.createServer((req, res) => {
   const url = new URL(req.url, `http://${req.headers.host}`);
 
+  // ---- API: guia de Paulo ----
+  if (url.pathname === '/api/paulo') {
+    if (req.method === 'GET') {
+      return sendJson(res, 200, readData()._paulo || {});
+    }
+    if (req.method === 'PUT' || req.method === 'POST') {
+      let raw = '';
+      req.on('data', (c) => (raw += c));
+      req.on('end', () => {
+        try {
+          const payload = JSON.parse(raw || '{}');
+          const dataObj = readData();
+          dataObj._paulo = payload.paulo && typeof payload.paulo === 'object' ? payload.paulo : {};
+          writeData(dataObj);
+          sendJson(res, 200, { ok: true });
+        } catch (e) {
+          sendJson(res, 400, { ok: false, error: String(e) });
+        }
+      });
+      return;
+    }
+    return sendJson(res, 405, { error: 'method not allowed' });
+  }
+
   // ---- API: estudos ----
   if (url.pathname === '/api/studies') {
     if (req.method === 'GET') {
