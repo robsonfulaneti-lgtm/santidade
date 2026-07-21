@@ -1,14 +1,16 @@
 // Service worker: cache do "casco" do app para funcionar offline.
+// Caminhos relativos para funcionar tanto na raiz (servidor local)
+// quanto numa subpasta (GitHub Pages: /santidade/).
 const CACHE = 'santidade-v5';
 const ASSETS = [
-  '/',
-  '/index.html',
-  '/style.css',
-  '/app.js',
-  '/manifest.webmanifest',
-  '/icons/icon.svg',
-  '/icons/icon-192.png',
-  '/icons/icon-512.png',
+  './',
+  './index.html',
+  './style.css',
+  './app.js',
+  './manifest.webmanifest',
+  './icons/icon.svg',
+  './icons/icon-192.png',
+  './icons/icon-512.png',
 ];
 
 self.addEventListener('install', (e) => {
@@ -25,8 +27,14 @@ self.addEventListener('activate', (e) => {
 self.addEventListener('fetch', (e) => {
   const url = new URL(e.request.url);
   // API sempre da rede (dados atuais); nunca cacheia.
-  if (url.pathname.startsWith('/api/')) {
-    e.respondWith(fetch(e.request).catch(() => new Response('{}', { headers: { 'Content-Type': 'application/json' } })));
+  // Sem servidor (GitHub Pages) isso falha e o app usa o localStorage.
+  if (url.pathname.includes('/api/')) {
+    e.respondWith(
+      fetch(e.request).catch(() => new Response('null', {
+        status: 503,
+        headers: { 'Content-Type': 'application/json' },
+      }))
+    );
     return;
   }
   // Estáticos: cache primeiro, com atualização em segundo plano.
