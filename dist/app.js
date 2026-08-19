@@ -555,4 +555,9 @@ $('daySheet').addEventListener('click', (e)=>{ if (e.target.id==='daySheet') { $
 load();
 for (const g of (window.GUIAS||[])) for (const et of g.etapas) if (etapaCompleta(g, et)) etapasCompletas[g.id+'-'+et.id] = true;
 setView('inicio');
-if ('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js').catch(()=>{});
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('./sw.js').catch(()=>{});
+  // quando uma nova versão assume o controle, recarrega uma vez sozinho
+  let recarregou = false;
+  navigator.serviceWorker.addEventListener('controllerchange', () => { if (recarregou) return; recarregou = true; location.reload(); });
+}
