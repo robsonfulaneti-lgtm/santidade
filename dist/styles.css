@@ -315,6 +315,68 @@ body {
 /* ---------- Confete ---------- */
 .confetti { position: fixed; inset: 0; z-index: 55; pointer-events: none; }
 
+/* ---------- Hero: contador /66 ---------- */
+.hero .pct small { font-size: 11px; font-weight: 700; color: var(--muted); }
+
+/* ---------- Aprender (cards no início) ---------- */
+.aprender-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.aprender-card { padding: 16px; border-radius: 18px; cursor: pointer; transition: transform .18s; }
+.aprender-card:active { transform: scale(.97); }
+.ac-emoji { font-size: 24px; }
+.ac-t { font-weight: 700; font-size: 15px; margin-top: 8px; }
+.ac-s { font-size: 12px; color: var(--muted); margin-top: 3px; line-height: 1.45; }
+
+/* ---------- A Bíblia: divisões e livros ---------- */
+.testamento-label { font-size: 12px; text-transform: uppercase; letter-spacing: 2px; color: var(--ink); font-weight: 800; margin: 22px 4px 10px; opacity: .85; }
+.testamento-label:first-child { margin-top: 4px; }
+.divisao { margin-bottom: 18px; }
+.divisao-head { display: flex; align-items: center; justify-content: space-between; margin: 0 4px 10px; }
+.divisao-nome { font-size: 13.5px; font-weight: 700; color: var(--accent); }
+.divisao-cont { font-size: 11px; font-weight: 800; color: var(--muted); background: rgba(255,255,255,.06); padding: 2px 8px; border-radius: 9px; }
+.livros-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
+.livro-card {
+  position: relative; text-align: left; border-radius: 14px; padding: 13px 14px; cursor: pointer;
+  border: 1px solid var(--line); color: var(--ink); display: flex; flex-direction: column; gap: 3px;
+  transition: transform .15s, border-color .2s; overflow: hidden;
+}
+.livro-card:active { transform: scale(.97); }
+.livro-card.lido { border-color: color-mix(in srgb, var(--accent) 55%, transparent); }
+.livro-card.concl { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 12%, transparent); }
+.livro-nome { font-weight: 700; font-size: 14.5px; }
+.livro-caps { font-size: 11px; color: var(--muted); }
+.livro-badge { position: absolute; top: 10px; right: 11px; width: 18px; height: 18px; border-radius: 50%; background: var(--accent); color: #0a0a14; font-size: 11px; font-weight: 900; display: grid; place-items: center; }
+.livro-dot { position: absolute; top: 14px; right: 14px; width: 7px; height: 7px; border-radius: 50%; background: var(--accent); }
+
+/* ---------- Detalhe do livro ---------- */
+.detail-kicker { font-size: 11.5px; color: var(--muted); margin-top: 2px; }
+.meta-chips { display: flex; flex-wrap: wrap; gap: 7px; margin: 4px 0 18px; }
+.chip { font-size: 11.5px; color: var(--muted); background: rgba(255,255,255,.05); border: 1px solid var(--line); padding: 6px 10px; border-radius: 10px; }
+.box-label { font-size: 10.5px; text-transform: uppercase; letter-spacing: 1px; color: var(--muted); font-weight: 800; margin-bottom: 6px; }
+.tema-box, .panorama-box { padding: 15px; border-radius: 15px; margin-bottom: 11px; }
+.tema-box p, .panorama-box p { margin: 0; font-size: 14.5px; line-height: 1.55; }
+.chave-box { padding: 15px; border-radius: 15px; margin-bottom: 11px; border: 1px solid var(--accent); background: color-mix(in srgb, var(--accent) 10%, transparent); }
+.chave-box p { margin: 0; font-size: 15px; line-height: 1.55; font-style: italic; font-weight: 600; }
+.cristo-box { padding: 15px; border-radius: 15px; margin-bottom: 18px; border: 1px solid var(--line); background: linear-gradient(160deg, rgba(232,196,106,.12), transparent); }
+.cristo-box p { margin: 0; font-size: 14px; line-height: 1.55; }
+.cristo-box .box-label { color: var(--ouro); }
+.lido-btn { margin-top: 2px; }
+
+/* ---------- A grande história ---------- */
+.ato-card { padding: 16px; border-radius: 18px; margin-bottom: 11px; }
+.ato-top { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; }
+.ato-nome { font-size: 16px; font-weight: 800; }
+.ato-ref { font-size: 11.5px; color: var(--muted); flex: none; }
+.ato-ideia { font-size: 13.5px; font-weight: 600; color: var(--esmeralda); margin: 8px 0 6px; line-height: 1.45; }
+.ato-texto { font-size: 13.5px; color: var(--muted); line-height: 1.6; margin: 0; }
+
+/* ---------- Como estudar (passos) ---------- */
+.passo-card { display: flex; gap: 14px; align-items: flex-start; padding: 15px; border-radius: 16px; margin-bottom: 10px; border-left: 3px solid var(--accent); }
+.passo-n { flex: none; width: 30px; height: 30px; border-radius: 9px; background: var(--accent); color: #0a0a14; font-weight: 900; display: grid; place-items: center; }
+.passo-nome { font-weight: 700; font-size: 15px; margin-bottom: 4px; }
+.passo-info p { margin: 0; font-size: 13.5px; color: var(--muted); line-height: 1.55; }
+.dicas { margin: 0; padding-left: 20px; }
+.dicas li { font-size: 13.5px; color: var(--muted); line-height: 1.7; }
+
 /* ---------- Reduz movimento ---------- */
 @media (prefers-reduced-motion: reduce) {
   * { animation-duration: .001ms !important; animation-iteration-count: 1 !important; transition-duration: .05ms !important; }
