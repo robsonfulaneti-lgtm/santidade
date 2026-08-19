@@ -1,5 +1,7 @@
 // Service worker do Lumen — cache offline do app (totalmente estático).
-const CACHE = 'lumen-v4';
+// Estratégia "rede primeiro": online sempre pega a versão nova;
+// offline usa o cache. Evita ficar preso em versão antiga.
+const CACHE = 'lumen-v5';
 const ASSETS = [
   './',
   './index.html',
@@ -26,13 +28,11 @@ self.addEventListener('activate', (e) => {
 
 self.addEventListener('fetch', (e) => {
   if (e.request.method !== 'GET') return;
+  // rede primeiro (atualiza o cache); cai para o cache se estiver offline
   e.respondWith(
-    caches.match(e.request).then((cached) => {
-      const net = fetch(e.request).then((res) => {
-        if (res.ok) { const copy = res.clone(); caches.open(CACHE).then((c) => c.put(e.request, copy)); }
-        return res;
-      }).catch(() => cached);
-      return cached || net;
-    })
+    fetch(e.request).then((res) => {
+      if (res && res.ok) { const copy = res.clone(); caches.open(CACHE).then((c) => c.put(e.request, copy)); }
+      return res;
+    }).catch(() => caches.match(e.request))
   );
 });
