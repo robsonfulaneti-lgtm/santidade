@@ -93,16 +93,15 @@ body {
 .small { font-size: 12.5px; line-height: 1.55; }
 
 /* ---------- Dashboard ---------- */
-.hero { padding: 22px; border-radius: 22px; position: relative; overflow: hidden; }
-.hero h1 { margin: 0 0 4px; font-size: 23px; letter-spacing: .3px; }
+.hero { padding: 20px; border-radius: 22px; position: relative; overflow: hidden; display: flex; align-items: center; gap: 16px; }
+.hero-text { flex: 1; min-width: 0; }
+.hero h1 { margin: 0 0 4px; font-size: 22px; letter-spacing: .3px; }
 .hero p { margin: 0; color: var(--muted); font-size: 13.5px; }
-.hero-ring { position: absolute; right: 16px; top: 50%; transform: translateY(-50%); }
+.hero-ring { flex: none; }
 
 .ring { --p: 0; position: relative; width: 84px; height: 84px; display: grid; place-items: center; }
-.ring svg { transform: rotate(-90deg); }
-.ring .track { stroke: rgba(255,255,255,.1); }
-.ring .fill { stroke: url(#grad); stroke-linecap: round; transition: stroke-dashoffset 1s cubic-bezier(.2,.8,.2,1); }
-.ring .pct { position: absolute; font-size: 17px; font-weight: 800; }
+.ring svg { display: block; }
+.ring .pct { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 17px; font-weight: 800; line-height: 1; }
 
 .stats-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 14px; }
 .stat { padding: 14px; border-radius: 16px; text-align: center; }
@@ -168,7 +167,7 @@ body {
 .etapa-titulo { display: block; font-size: 15.5px; font-weight: 700; margin-top: 3px; }
 .etapa-info { flex: 1; min-width: 0; }
 .mini-ring-wrap { flex: none; position: relative; display: grid; place-items: center; }
-.mini-ring-wrap .txt { position: absolute; font-size: 10px; font-weight: 800; }
+.mini-ring-wrap .txt { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 9.5px; font-weight: 800; line-height: 1; }
 .etapa-seta { flex: none; color: var(--muted); transition: transform .25s; }
 .etapa.open .etapa-seta { transform: rotate(90deg); }
 

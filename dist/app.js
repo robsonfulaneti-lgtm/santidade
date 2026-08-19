@@ -99,12 +99,14 @@ function renderInicio() {
 
   app.innerHTML = `
     <section class="hero glass">
+      <div class="hero-text">
+        <h1>${saud} 🙏</h1>
+        <p>Sua jornada pela Palavra continua aqui.</p>
+      </div>
       <div class="hero-ring ring">
         ${ringSVG(pct, 84, 9, 'hero')}
         <span class="pct">${Math.round(pct * 100)}%</span>
       </div>
-      <h1>${saud} 🙏</h1>
-      <p>Sua jornada pela Palavra continua aqui.</p>
     </section>
 
     <div class="stats-row">
