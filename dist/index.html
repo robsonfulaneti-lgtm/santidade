@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#0a0a14" />
+  <title>Lumen · Estudo Bíblico</title>
+  <link rel="manifest" href="./manifest.webmanifest" />
+  <link rel="icon" href="./icons/icon.svg" type="image/svg+xml" />
+  <link rel="apple-touch-icon" href="./icons/icon-192.png" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="description" content="Estudo bíblico com métodos e guias temáticos: Paulo, Pentateuco, discípulos, Jesus, parábolas, Davi." />
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+  <!-- fundo animado (aurora) -->
+  <div class="aurora" aria-hidden="true">
+    <span class="blob b1"></span>
+    <span class="blob b2"></span>
+    <span class="blob b3"></span>
+    <div class="grid-overlay"></div>
+  </div>
+
+  <!-- topo -->
+  <header class="topbar glass">
+    <div class="brand">
+      <span class="brand-mark">✦</span>
+      <div class="brand-text">
+        <strong>Lumen</strong>
+        <small>estudo bíblico</small>
+      </div>
+    </div>
+    <button id="backupBtn" class="icon-btn" aria-label="Backup">☁</button>
+  </header>
+
+  <!-- conteúdo -->
+  <main id="app" class="app"></main>
+
+  <!-- navegação inferior -->
+  <nav class="tabbar glass" role="tablist">
+    <button class="tabbtn active" data-view="inicio"><span>🏠</span>Início</button>
+    <button class="tabbtn" data-view="guias"><span>📚</span>Guias</button>
+    <button class="tabbtn" data-view="metodos"><span>🔎</span>Métodos</button>
+    <button class="tabbtn" data-view="diario"><span>📔</span>Diário</button>
+  </nav>
+
+  <!-- painel de backup -->
+  <div id="backupSheet" class="sheet-backdrop" hidden>
+    <section class="sheet glass" role="dialog" aria-modal="true">
+      <div class="sheet-grip"></div>
+      <div class="sheet-head">
+        <h2>Backup &amp; dados</h2>
+        <button id="closeBackup" class="icon-btn" aria-label="Fechar">✕</button>
+      </div>
+      <p class="muted small">Seus estudos ficam salvos neste aparelho. Exporte de vez em quando para não perder — o arquivo restaura tudo em qualquer aparelho.</p>
+      <div class="backup-actions">
+        <button id="exportBtn" class="btn primary">⬇ Exportar backup</button>
+        <button id="importBtn" class="btn ghost">⬆ Importar backup</button>
+        <input id="importFile" type="file" accept=".json,application/json" hidden />
+      </div>
+      <p id="importInfo" class="muted small import-info" hidden></p>
+      <div class="backup-stats" id="backupStats"></div>
+    </section>
+  </div>
+
+  <!-- toast -->
+  <div id="toast" class="toast" hidden></div>
+
+  <!-- confete de conclusão -->
+  <canvas id="confetti" class="confetti" aria-hidden="true"></canvas>
+
+  <script src="./guides.js"></script>
+  <script src="./app.js"></script>
+</body>
+</html>

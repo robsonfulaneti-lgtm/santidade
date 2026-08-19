@@ -9,3 +9,6 @@ tunnel.log
 *.log
 
 node_modules/
+
+# pacote pronto do Netlify (gerado)
+lumen-netlify.zip
