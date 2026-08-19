@@ -1,5 +1,5 @@
 // Service worker do Lumen — cache offline do app (totalmente estático).
-const CACHE = 'lumen-v3';
+const CACHE = 'lumen-v4';
 const ASSETS = [
   './',
   './index.html',
