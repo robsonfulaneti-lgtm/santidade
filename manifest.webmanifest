@@ -1,13 +1,13 @@
 {
-  "name": "Santidade · Diário",
-  "short_name": "Santidade",
-  "description": "Diário diário de disciplinas espirituais e estudos.",
+  "name": "Lumen · Estudo Bíblico",
+  "short_name": "Lumen",
+  "description": "Estudo bíblico com métodos e guias temáticos: Paulo, Pentateuco, discípulos, Jesus, parábolas e Davi.",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
   "orientation": "portrait",
-  "background_color": "#0f0e1a",
-  "theme_color": "#1e1b4b",
+  "background_color": "#07070e",
+  "theme_color": "#0a0a14",
   "icons": [
     { "src": "./icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
     { "src": "./icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },

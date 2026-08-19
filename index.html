@@ -3,133 +3,74 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <meta name="theme-color" content="#1e1b4b" />
-  <title>Santidade · Diário</title>
+  <meta name="theme-color" content="#0a0a14" />
+  <title>Lumen · Estudo Bíblico</title>
   <link rel="manifest" href="./manifest.webmanifest" />
   <link rel="icon" href="./icons/icon.svg" type="image/svg+xml" />
   <link rel="apple-touch-icon" href="./icons/icon-192.png" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-  <link rel="stylesheet" href="./style.css" />
+  <meta name="description" content="Estudo bíblico com métodos e guias temáticos: Paulo, Pentateuco, discípulos, Jesus, parábolas, Davi." />
+  <link rel="stylesheet" href="./styles.css" />
 </head>
 <body>
-  <div class="app">
-    <header class="topbar">
-      <div class="brand">
-        <span class="brand-mark">✦</span>
-        <div>
-          <h1>Santidade</h1>
-          <p id="streakInfo" class="streak">—</p>
-        </div>
-      </div>
-      <nav class="tabs" role="tablist">
-        <button id="tabCalendario" class="tab active" data-view="calendario" role="tab">Calendário</button>
-        <button id="tabEstudos" class="tab" data-view="estudos" role="tab">Estudos</button>
-        <button id="tabPaulo" class="tab" data-view="paulo" role="tab">Paulo</button>
-      </nav>
-    </header>
-
-    <!-- ================= ABA CALENDÁRIO ================= -->
-    <section id="viewCalendario" class="view">
-      <div class="month-nav">
-        <button id="prevMonth" class="nav-btn" aria-label="Mês anterior">‹</button>
-        <span id="monthLabel" class="month-label">—</span>
-        <button id="nextMonth" class="nav-btn" aria-label="Próximo mês">›</button>
-      </div>
-
-      <div class="weekdays">
-        <span>D</span><span>S</span><span>T</span><span>Q</span><span>Q</span><span>S</span><span>S</span>
-      </div>
-      <main id="calendar" class="calendar"></main>
-
-      <p class="hint">Toque em um dia para registrar. Verde = tudo feito · Ponto dourado = registro parcial.</p>
-
-      <section class="books">
-        <div class="books-head">
-          <h2>📕 Livros terminados</h2>
-          <span id="booksCount" class="books-count">0</span>
-        </div>
-        <div class="book-add">
-          <input id="bookInput" type="text" placeholder="Nome do livro que terminei..." autocomplete="off" />
-          <button id="bookAdd" class="btn primary">Adicionar</button>
-        </div>
-        <ul id="booksList" class="books-list"></ul>
-      </section>
-    </section>
-
-    <!-- ================= ABA ESTUDOS ================= -->
-    <section id="viewEstudos" class="view" hidden>
-      <div class="study-form">
-        <h2>✍️ Novo estudo</h2>
-        <div class="study-row">
-          <label class="field grow">
-            <span>Livro</span>
-            <input id="studyLivro" type="text" placeholder="Ex.: João" autocomplete="off" />
-          </label>
-          <label class="field narrow">
-            <span>Capítulo</span>
-            <input id="studyCapitulo" type="text" inputmode="numeric" placeholder="3" autocomplete="off" />
-          </label>
-        </div>
-        <label class="field">
-          <span>O que eu entendi</span>
-          <textarea id="studyTexto" rows="4" placeholder="Escreva aqui o que você entendeu..."></textarea>
-        </label>
-        <button id="studyAdd" class="btn primary full">Salvar estudo</button>
-      </div>
-
-      <div class="studies-head">
-        <h2>📔 Meus estudos</h2>
-        <span id="studiesCount" class="books-count">0</span>
-      </div>
-      <div id="studiesList" class="studies-list"></div>
-    </section>
-
-    <!-- ================= ABA PAULO ================= -->
-    <section id="viewPaulo" class="view" hidden>
-      <div class="paulo-head">
-        <h2>🕊️ A vida de Paulo</h2>
-        <p class="paulo-sub">Cronologia cruzando Atos com as cartas. Marque conforme for lendo e escreva seus comentários.</p>
-        <div class="progress">
-          <div class="progress-track"><span id="pauloBarFill" class="progress-fill"></span></div>
-          <span id="pauloProgress" class="progress-label">0 de 0</span>
-        </div>
-      </div>
-
-      <div id="pauloEtapas" class="paulo-etapas"></div>
-
-      <p class="paulo-tip">
-        💡 <strong>Dica de uso:</strong> leia o trecho de Atos da etapa e, em seguida,
-        a(s) carta(s) daquele período. Assim você acompanha Paulo “em tempo real”,
-        entendendo o contexto de cada escrito.
-      </p>
-    </section>
-
-    <footer class="backup">
-      <button id="exportBtn" class="btn ghost small">⬇ Exportar backup</button>
-      <button id="importBtn" class="btn ghost small">⬆ Importar backup</button>
-      <input id="importFile" type="file" accept=".json,application/json" hidden />
-    </footer>
+  <!-- fundo animado (aurora) -->
+  <div class="aurora" aria-hidden="true">
+    <span class="blob b1"></span>
+    <span class="blob b2"></span>
+    <span class="blob b3"></span>
+    <div class="grid-overlay"></div>
   </div>
 
-  <!-- Painel do dia -->
-  <div id="sheetBackdrop" class="sheet-backdrop" hidden>
-    <section id="sheet" class="sheet" role="dialog" aria-modal="true">
+  <!-- topo -->
+  <header class="topbar glass">
+    <div class="brand">
+      <span class="brand-mark">✦</span>
+      <div class="brand-text">
+        <strong>Lumen</strong>
+        <small>estudo bíblico</small>
+      </div>
+    </div>
+    <button id="backupBtn" class="icon-btn" aria-label="Backup">☁</button>
+  </header>
+
+  <!-- conteúdo -->
+  <main id="app" class="app"></main>
+
+  <!-- navegação inferior -->
+  <nav class="tabbar glass" role="tablist">
+    <button class="tabbtn active" data-view="inicio"><span>🏠</span>Início</button>
+    <button class="tabbtn" data-view="guias"><span>📚</span>Guias</button>
+    <button class="tabbtn" data-view="metodos"><span>🔎</span>Métodos</button>
+    <button class="tabbtn" data-view="diario"><span>📔</span>Diário</button>
+  </nav>
+
+  <!-- painel de backup -->
+  <div id="backupSheet" class="sheet-backdrop" hidden>
+    <section class="sheet glass" role="dialog" aria-modal="true">
       <div class="sheet-grip"></div>
       <div class="sheet-head">
-        <h2 id="sheetDate">—</h2>
-        <button id="closeSheet" class="close-btn" aria-label="Fechar">✕</button>
+        <h2>Backup &amp; dados</h2>
+        <button id="closeBackup" class="icon-btn" aria-label="Fechar">✕</button>
       </div>
-      <div id="habitsList" class="habits"></div>
-      <div class="sheet-actions">
-        <button id="clearDay" class="btn ghost">Limpar dia</button>
-        <button id="saveDay" class="btn primary">Salvar</button>
+      <p class="muted small">Seus estudos ficam salvos neste aparelho. Exporte de vez em quando para não perder — o arquivo restaura tudo em qualquer aparelho.</p>
+      <div class="backup-actions">
+        <button id="exportBtn" class="btn primary">⬇ Exportar backup</button>
+        <button id="importBtn" class="btn ghost">⬆ Importar backup</button>
+        <input id="importFile" type="file" accept=".json,application/json" hidden />
       </div>
+      <p id="importInfo" class="muted small import-info" hidden></p>
+      <div class="backup-stats" id="backupStats"></div>
     </section>
   </div>
 
+  <!-- toast -->
   <div id="toast" class="toast" hidden></div>
 
+  <!-- confete de conclusão -->
+  <canvas id="confetti" class="confetti" aria-hidden="true"></canvas>
+
+  <script src="./guides.js"></script>
   <script src="./app.js"></script>
 </body>
 </html>

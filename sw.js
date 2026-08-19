@@ -1,11 +1,10 @@
-// Service worker: cache do "casco" do app para funcionar offline.
-// Caminhos relativos para funcionar tanto na raiz (servidor local)
-// quanto numa subpasta (GitHub Pages: /santidade/).
-const CACHE = 'santidade-v6';
+// Service worker do Lumen — cache offline do app (totalmente estático).
+const CACHE = 'lumen-v1';
 const ASSETS = [
   './',
   './index.html',
-  './style.css',
+  './styles.css',
+  './guides.js',
   './app.js',
   './manifest.webmanifest',
   './icons/icon.svg',
@@ -25,26 +24,11 @@ self.addEventListener('activate', (e) => {
 });
 
 self.addEventListener('fetch', (e) => {
-  const url = new URL(e.request.url);
-  // API sempre da rede (dados atuais); nunca cacheia.
-  // Sem servidor (GitHub Pages) isso falha e o app usa o localStorage.
-  if (url.pathname.includes('/api/')) {
-    e.respondWith(
-      fetch(e.request).catch(() => new Response('null', {
-        status: 503,
-        headers: { 'Content-Type': 'application/json' },
-      }))
-    );
-    return;
-  }
-  // Estáticos: cache primeiro, com atualização em segundo plano.
+  if (e.request.method !== 'GET') return;
   e.respondWith(
     caches.match(e.request).then((cached) => {
       const net = fetch(e.request).then((res) => {
-        if (res.ok && e.request.method === 'GET') {
-          const copy = res.clone();
-          caches.open(CACHE).then((c) => c.put(e.request, copy));
-        }
+        if (res.ok) { const copy = res.clone(); caches.open(CACHE).then((c) => c.put(e.request, copy)); }
         return res;
       }).catch(() => cached);
       return cached || net;
