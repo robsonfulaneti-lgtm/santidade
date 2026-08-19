@@ -71,8 +71,8 @@ function setView(view, arg) {
   const app = $('app'); app.className = 'app';
   app.classList.remove('view-enter'); void app.offsetWidth; app.classList.add('view-enter');
   window.scrollTo(0, 0);
-  ({ inicio: renderInicio, biblia: renderBiblia, livro: renderLivro, guias: renderGuias,
-     guia: renderGuia, diario: renderDiario, historia: renderHistoria, metodo: renderMetodo }[view] || renderInicio)(arg);
+  ({ inicio: renderInicio, biblia: renderBiblia, livro: renderLivro, guias: renderGuias, guia: renderGuia,
+     rotina: renderRotina, diario: renderDiario, historia: renderHistoria, metodo: renderMetodo }[view] || renderInicio)(arg);
 }
 
 // ---------- Início ----------
@@ -371,6 +371,101 @@ function renderDiario() {
   }
 }
 
+// ---------- Rotina (calendário de disciplinas) ----------
+const HABITOS = [
+  { key: 'biblia', emoji: '📖', nome: 'Li a Bíblia', campo: 'text', ph: 'O que li hoje...' },
+  { key: 'jejum', emoji: '⏳', nome: 'Jejum', campo: 'hours' },
+  { key: 'oracao', emoji: '🙏', nome: 'Orei', campo: null },
+];
+const MESES = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+const DIAS = ['Domingo','Segunda','Terça','Quarta','Quinta','Sexta','Sábado'];
+let rotinaView = new Date();
+let openDayKey = null;
+
+function entradas() { return store.legacyEntries; }
+function dayStatus(e) { if (!e) return null; const n = HABITOS.filter((h) => e[h.key]?.done).length; if (!n) return null; return n === HABITOS.length ? 'complete' : 'partial'; }
+function keyYMD(y, m, d) { return `${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`; }
+function calcStreak() { let s = 0; const d = new Date(); for (;;) { const k = keyYMD(d.getFullYear(), d.getMonth(), d.getDate()); if (dayStatus(entradas()[k])) { s++; d.setDate(d.getDate()-1); } else break; } return s; }
+
+function renderRotina() {
+  const app = $('app');
+  const s = calcStreak();
+  app.innerHTML = `
+    <p class="section-title">Rotina espiritual</p>
+    <div class="rotina-top">
+      <div class="month-nav glass"><button class="nav-btn" id="prevM">‹</button><span id="monthLabel" class="month-label"></span><button class="nav-btn" id="nextM">›</button></div>
+      <div class="streak-badge glass">${s > 0 ? `🔥 ${s} dia${s>1?'s':''}` : '✨ Comece hoje'}</div>
+    </div>
+    <div class="weekdays">${['D','S','T','Q','Q','S','S'].map((d)=>`<span>${d}</span>`).join('')}</div>
+    <div class="calendar" id="cal"></div>
+    <p class="rotina-hint">Toque num dia para marcar. <b>Verde</b> = tudo feito · <b>ponto</b> = parcial.</p>`;
+  $('prevM').onclick = () => { rotinaView.setMonth(rotinaView.getMonth()-1); renderRotina(); };
+  $('nextM').onclick = () => { rotinaView.setMonth(rotinaView.getMonth()+1); renderRotina(); };
+  buildCalendar();
+}
+
+function buildCalendar() {
+  const y = rotinaView.getFullYear(), m = rotinaView.getMonth();
+  $('monthLabel').textContent = `${MESES[m]} ${y}`;
+  const primeiro = new Date(y, m, 1).getDay(), dias = new Date(y, m+1, 0).getDate();
+  const hoje = keyYMD(new Date().getFullYear(), new Date().getMonth(), new Date().getDate());
+  const cal = $('cal'); cal.innerHTML = '';
+  for (let i = 0; i < primeiro; i++) cal.appendChild(el('div', 'day empty'));
+  for (let d = 1; d <= dias; d++) {
+    const k = keyYMD(y, m, d);
+    const st = dayStatus(entradas()[k]);
+    const cell = el('button', 'day' + (st === 'complete' ? ' complete' : st === 'partial' ? ' partial' : '') + (k === hoje ? ' today' : ''));
+    cell.innerHTML = `${d}${st === 'partial' ? '<span class="ddot"></span>' : ''}`;
+    cell.onclick = () => openDay(k);
+    cal.appendChild(cell);
+  }
+}
+
+function dayTitlePt(k) { const [y,m,d] = k.split('-').map(Number); const dt = new Date(y, m-1, d); return `${DIAS[dt.getDay()]}, ${d} de ${MESES[m-1]}`; }
+
+function openDay(k) {
+  openDayKey = k;
+  $('dayTitle').textContent = dayTitlePt(k);
+  const e = entradas()[k] || {};
+  const wrap = $('dayHabits'); wrap.innerHTML = '';
+  for (const h of HABITOS) {
+    const st = e[h.key] || {};
+    const card = el('div', 'habit' + (st.done ? ' on' : '')); card.dataset.key = h.key;
+    card.innerHTML = `<div class="habit-row"><span class="habit-emoji">${h.emoji}</span><span class="habit-nome">${h.nome}</span><span class="hcheck">✓</span></div>`;
+    let field = null;
+    if (h.campo === 'text') { field = el('textarea', 'habit-field'); field.placeholder = h.ph || ''; field.value = st.text || ''; field.hidden = !st.done; card.appendChild(field); }
+    else if (h.campo === 'hours') { field = el('label', 'hours-field'); field.hidden = !st.done;
+      field.innerHTML = `<input type="number" min="0" step="0.5" inputmode="decimal" placeholder="0" value="${st.hours != null ? st.hours : ''}"><span>horas de jejum</span>`; card.appendChild(field); }
+    card.querySelector('.habit-row').onclick = () => { const on = card.classList.toggle('on'); const f = card.querySelector('.habit-field, .hours-field'); if (f) f.hidden = !on; };
+    wrap.appendChild(card);
+  }
+  $('daySheet').hidden = false;
+}
+
+function collectDay() {
+  const e = {};
+  document.querySelectorAll('#dayHabits .habit').forEach((card) => {
+    if (!card.classList.contains('on')) return;
+    const key = card.dataset.key;
+    const ta = card.querySelector('.habit-field'), num = card.querySelector('.hours-field input');
+    if (num) e[key] = { done: true, hours: num.value === '' ? null : Number(num.value) };
+    else if (ta) e[key] = { done: true, text: ta.value.trim() };
+    else e[key] = { done: true };
+  });
+  return e;
+}
+
+function saveDay() {
+  if (!openDayKey) return;
+  const e = collectDay();
+  const completa = HABITOS.every((h) => e[h.key]?.done);
+  if (Object.keys(e).length) store.legacyEntries[openDayKey] = e; else delete store.legacyEntries[openDayKey];
+  save(); $('daySheet').hidden = true; openDayKey = null;
+  renderRotina();
+  if (completa) { celebrar(); toast('Dia completo! 🎉'); } else toast('Salvo ✓');
+}
+function clearDay() { if (!openDayKey) return; delete store.legacyEntries[openDayKey]; save(); $('daySheet').hidden = true; openDayKey = null; renderRotina(); toast('Dia limpo'); }
+
 // ---------- Backup ----------
 function openBackup() {
   $('backupSheet').hidden = false;
@@ -451,6 +546,10 @@ $('backupSheet').addEventListener('click', (e)=>{ if (e.target.id==='backupSheet
 $('exportBtn').onclick = exportBackup;
 $('importBtn').onclick = () => $('importFile').click();
 $('importFile').addEventListener('change', (e)=>{ const f=e.target.files[0]; if (f) importBackup(f); e.target.value=''; });
+$('closeDay').onclick = () => { $('daySheet').hidden = true; openDayKey = null; };
+$('saveDay').onclick = saveDay;
+$('clearDay').onclick = clearDay;
+$('daySheet').addEventListener('click', (e)=>{ if (e.target.id==='daySheet') { $('daySheet').hidden = true; openDayKey = null; } });
 
 // ---------- Init ----------
 load();

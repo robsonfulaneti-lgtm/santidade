@@ -38,9 +38,10 @@
   <main id="app" class="app"></main>
 
   <!-- navegação inferior -->
-  <nav class="tabbar glass" role="tablist">
+  <nav class="tabbar glass tabbar-5" role="tablist">
     <button class="tabbtn active" data-view="inicio"><span>🏠</span>Início</button>
-    <button class="tabbtn" data-view="biblia"><span>📖</span>A Bíblia</button>
+    <button class="tabbtn" data-view="biblia"><span>📖</span>Bíblia</button>
+    <button class="tabbtn" data-view="rotina"><span>📅</span>Rotina</button>
     <button class="tabbtn" data-view="guias"><span>🎯</span>Guias</button>
     <button class="tabbtn" data-view="diario"><span>📔</span>Diário</button>
   </nav>
@@ -61,6 +62,22 @@
       </div>
       <p id="importInfo" class="muted small import-info" hidden></p>
       <div class="backup-stats" id="backupStats"></div>
+    </section>
+  </div>
+
+  <!-- painel do dia (rotina) -->
+  <div id="daySheet" class="sheet-backdrop" hidden>
+    <section class="sheet glass" role="dialog" aria-modal="true">
+      <div class="sheet-grip"></div>
+      <div class="sheet-head">
+        <h2 id="dayTitle">—</h2>
+        <button id="closeDay" class="icon-btn" aria-label="Fechar">✕</button>
+      </div>
+      <div id="dayHabits" class="day-habits"></div>
+      <div class="day-actions">
+        <button id="clearDay" class="btn ghost">Limpar dia</button>
+        <button id="saveDay" class="btn primary">Salvar</button>
+      </div>
     </section>
   </div>
 
