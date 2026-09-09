@@ -1,7 +1,7 @@
-// Service worker do Lumen — cache offline do app (totalmente estático).
+// Service worker do Santidade — cache offline do app (totalmente estático).
 // Estratégia "rede primeiro": online sempre pega a versão nova;
 // offline usa o cache. Evita ficar preso em versão antiga.
-const CACHE = 'lumen-v6';
+const CACHE = 'santidade-v7';
 const ASSETS = [
   './',
   './index.html',
