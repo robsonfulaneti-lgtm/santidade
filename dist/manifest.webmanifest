@@ -1,7 +1,7 @@
 {
-  "name": "Lumen · Estudo Bíblico",
-  "short_name": "Lumen",
-  "description": "Estudo bíblico com métodos e guias temáticos: Paulo, Pentateuco, discípulos, Jesus, parábolas e Davi.",
+  "name": "Santidade · Estudo Bíblico",
+  "short_name": "Santidade",
+  "description": "Estudo da Bíblia inteira: panorama dos 66 livros, os 150 Salmos, guias temáticos e rotina diária de disciplinas.",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",

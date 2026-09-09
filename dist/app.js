@@ -1,5 +1,5 @@
 /* ============================================================
-   LUMEN — estudo da Bíblia inteira. App estático, local-first.
+   SANTIDADE — estudo da Bíblia inteira. App estático, local-first.
    Núcleo: panorama dos 66 livros. Guias: Paulo (progresso
    preservado) e os Doze Discípulos. Aprender: a grande história
    e como estudar. Diário: reflexões. Sem servidor.
@@ -7,13 +7,19 @@
 
 const $ = (id) => document.getElementById(id);
 const el = (t, c) => { const e = document.createElement(t); if (c) e.className = c; return e; };
-const LS = 'lumen_store';
+const LS = 'santidade_store';
+const LS_ANTIGO = 'lumen_store'; // versão anterior: migramos os dados sem apagar
 
 // ---------- Estado (mesma chave de antes: preserva Paulo) ----------
 let store = { books: {}, guides: {}, salmos: {}, studies: [], legacyEntries: {}, legacyBooks: [] };
 
 function load() {
-  try { const raw = JSON.parse(localStorage.getItem(LS)); if (raw && typeof raw === 'object') store = Object.assign(store, raw); } catch {}
+  try {
+    let bruto = localStorage.getItem(LS);
+    if (!bruto) { const antigo = localStorage.getItem(LS_ANTIGO); if (antigo) { bruto = antigo; localStorage.setItem(LS, antigo); } }
+    const raw = JSON.parse(bruto);
+    if (raw && typeof raw === 'object') store = Object.assign(store, raw);
+  } catch {}
   if (!store.books) store.books = {};
   if (!store.guides) store.guides = {};
   if (!store.salmos) store.salmos = {};
@@ -578,20 +584,20 @@ function openBackup() {
   $('importInfo').hidden = true;
 }
 function exportBackup() {
-  const payload = { app: 'lumen', version: 4, exportedAt: new Date().toISOString(),
+  const payload = { app: 'santidade', version: 5, exportedAt: new Date().toISOString(),
     books: store.books, guides: store.guides, salmos: store.salmos, studies: store.studies,
     legacyEntries: store.legacyEntries, legacyBooks: store.legacyBooks };
   const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
-  const a = el('a'); a.href = URL.createObjectURL(blob); a.download = `lumen-backup-${keyOf(new Date())}.json`; a.click(); URL.revokeObjectURL(a.href);
+  const a = el('a'); a.href = URL.createObjectURL(blob); a.download = `santidade-backup-${keyOf(new Date())}.json`; a.click(); URL.revokeObjectURL(a.href);
   toast('Backup exportado ✓');
 }
 async function importBackup(file) {
   let p; try { p = JSON.parse(await file.text()); } catch { toast('Arquivo inválido'); return; }
   const info = { livros: 0, respostas: 0, notas: 0 };
-  // Detecção exclusiva: santidade (antigo) vs lumen (novo)
-  const ehAntigo = p.app === 'santidade' || p.paulo || p.entries || (Array.isArray(p.books) && !p.guides);
+  // Detecção exclusiva: formato legado (sem "version") vs atual (com "version")
+  const ehAntigo = !p.version && (p.app === 'santidade' || p.paulo || p.entries || Array.isArray(p.books));
 
-  // Formato novo (lumen: v2 ou v3) — books/guides são objetos (mapas), não arrays
+  // Formato atual (v2 em diante) — books/guides são objetos (mapas), não arrays
   if (!ehAntigo) {
     if (p.books && !Array.isArray(p.books)) for (const bid in p.books) { const s = p.books[bid], d = bookStore(bid);
       if (s.lido) d.lido = true; for (const k in (s.respostas||{})) if (!d.respostas[k]) { d.respostas[k] = s.respostas[k]; info.respostas++; } info.livros++; }
