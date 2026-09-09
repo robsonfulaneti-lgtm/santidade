@@ -10,12 +10,13 @@ const el = (t, c) => { const e = document.createElement(t); if (c) e.className =
 const LS = 'lumen_store';
 
 // ---------- Estado (mesma chave de antes: preserva Paulo) ----------
-let store = { books: {}, guides: {}, studies: [], legacyEntries: {}, legacyBooks: [] };
+let store = { books: {}, guides: {}, salmos: {}, studies: [], legacyEntries: {}, legacyBooks: [] };
 
 function load() {
   try { const raw = JSON.parse(localStorage.getItem(LS)); if (raw && typeof raw === 'object') store = Object.assign(store, raw); } catch {}
   if (!store.books) store.books = {};
   if (!store.guides) store.guides = {};
+  if (!store.salmos) store.salmos = {};
   if (!Array.isArray(store.studies)) store.studies = [];
   if (!store.legacyEntries) store.legacyEntries = {};
   if (!Array.isArray(store.legacyBooks)) store.legacyBooks = [];
@@ -72,7 +73,8 @@ function setView(view, arg) {
   app.classList.remove('view-enter'); void app.offsetWidth; app.classList.add('view-enter');
   window.scrollTo(0, 0);
   ({ inicio: renderInicio, biblia: renderBiblia, livro: renderLivro, guias: renderGuias, guia: renderGuia,
-     rotina: renderRotina, diario: renderDiario, historia: renderHistoria, metodo: renderMetodo }[view] || renderInicio)(arg);
+     salmos: renderSalmos, salmo: renderSalmo, rotina: renderRotina, diario: renderDiario,
+     historia: renderHistoria, metodo: renderMetodo }[view] || renderInicio)(arg);
 }
 
 // ---------- Início ----------
@@ -178,9 +180,12 @@ function renderLivro(bookId) {
     <button class="btn ${st.lido ? 'ghost' : 'accent'} full lido-btn" id="lidoBtn">
       ${st.lido ? '✓ Livro lido' : 'Marcar como lido'}</button>
 
+    ${b.id === 'sl' ? '<button class="btn primary full" id="irSalmos" style="margin-top:10px">🎵 Estudar os 150 Salmos, um a um ›</button>' : ''}
+
     <p class="bloco-label" style="margin-top:22px">✍️ Perguntas de reflexão</p>
     <div id="perguntas"></div>`;
   $('back').onclick = () => { app.className = 'app'; setView('biblia'); };
+  if ($('irSalmos')) $('irSalmos').onclick = () => setView('salmos');
   $('lidoBtn').onclick = () => {
     st.lido = !st.lido; if (!st.lido && !(Object.keys(st.respostas || {}).length)) {} save();
     const btn = $('lidoBtn'); btn.className = `btn ${st.lido ? 'ghost' : 'accent'} full lido-btn`;
@@ -228,6 +233,16 @@ function renderGuias() {
     card.onclick = () => setView('guia', g.id);
     grid.appendChild(card);
   });
+  // card especial: os 150 Salmos
+  const f = salmosFeitos(), pctS = f / 150;
+  const cs = el('div', 'guia-card glass c-ouro' + (f === 150 ? ' done' : ''));
+  cs.innerHTML = `<div class="guia-top"><span class="guia-emoji">🎵</span>
+    <div class="guia-h"><div class="t">Os 150 Salmos</div><div class="r">Salmo a salmo: quem escreveu, por que escreveu e espaço para suas anotações.</div></div>
+    <div class="guia-mini-ring ring" style="width:52px;height:52px">${ringSVG(pctS,52,6,'gsalmos')}<span class="pct" style="font-size:12px">${Math.round(pctS*100)}%</span></div></div>
+    <div class="guia-bar"><span style="width:${pctS*100}%"></span></div>
+    <div class="guia-meta"><span>5 blocos</span><span>${f}/150 salmos</span></div>`;
+  cs.onclick = () => setView('salmos');
+  grid.appendChild(cs);
 }
 
 let etapasAbertas = {}, etapasCompletas = {};
@@ -371,6 +386,94 @@ function renderDiario() {
   }
 }
 
+// ---------- Os 150 Salmos ----------
+function salmoStore(n) { if (!store.salmos[n]) store.salmos[n] = { lido: false, nota: '' }; return store.salmos[n]; }
+function salmoFeito(n) { const s = store.salmos[n]; return !!(s && (s.lido || (s.nota || '').trim())); }
+function salmosFeitos() { return SALMOS.lista.filter((s) => salmoFeito(s.n)).length; }
+function blocoFeitos(b) { return SALMOS.lista.filter((s) => s.n >= b.de && s.n <= b.ate && salmoFeito(s.n)).length; }
+let blocosAbertos = {};
+
+function renderSalmos() {
+  const app = $('app');
+  const feitos = salmosFeitos();
+  app.innerHTML = `
+    <div class="detail-head"><button class="back-btn" id="back">←</button>
+      <div><div class="detail-title">🎵 Os 150 Salmos</div><div class="detail-kicker">${feitos} de 150 estudados</div></div></div>
+    <p class="detail-sub">${SALMOS.intro}</p>
+    <div class="detail-progress"><div class="progress-track"><span class="progress-fill" id="sFill"></span></div>
+      <span class="progress-label">${feitos}/150</span></div>
+    <div id="blocos"></div>`;
+  $('back').onclick = () => { app.className = 'app'; setView('guias'); };
+  requestAnimationFrame(() => { $('sFill').style.width = (feitos / 150 * 100) + '%'; });
+  const wrap = $('blocos');
+  SALMOS.blocos.forEach((b) => wrap.appendChild(renderBloco(b)));
+}
+
+function renderBloco(b) {
+  const aberto = !!blocosAbertos[b.id];
+  const f = blocoFeitos(b), total = b.ate - b.de + 1;
+  const card = el('section', 'etapa c-' + b.cor + (f === total ? ' completa' : '') + (aberto ? ' open' : ''));
+  const head = el('button', 'etapa-head');
+  head.innerHTML = `<div class="mini-ring-wrap ring" style="width:38px;height:38px">${ringSVG(total?f/total:0,38,4,'b'+b.id)}<span class="txt">${f}</span></div>
+    <div class="etapa-info"><span class="etapa-num">${b.nome} · ${b.faixa}</span><span class="etapa-titulo">${b.resumo}</span></div>
+    <span class="etapa-seta">▸</span>`;
+  head.onclick = () => { blocosAbertos[b.id] = !blocosAbertos[b.id]; card.replaceWith(renderBloco(b)); };
+  card.appendChild(head);
+  const body = el('div', 'etapa-body'); body.hidden = !aberto;
+  if (aberto) {
+    const grid = el('div', 'salmos-grid');
+    SALMOS.lista.filter((s) => s.n >= b.de && s.n <= b.ate).forEach((s) => {
+      const chip = el('button', 'salmo-chip' + (salmoFeito(s.n) ? ' feito' : ''));
+      chip.innerHTML = `<span class="sc-n">${s.n}</span><span class="sc-t">${s.t}</span>`;
+      chip.onclick = () => setView('salmo', s.n);
+      grid.appendChild(chip);
+    });
+    body.appendChild(grid);
+  }
+  card.appendChild(body);
+  return card;
+}
+
+function renderSalmo(n) {
+  n = Number(n);
+  const s = SALMOS.lista.find((x) => x.n === n);
+  if (!s) return setView('salmos');
+  const bloco = SALMOS.blocos.find((b) => n >= b.de && n <= b.ate);
+  const app = $('app'); app.className = 'app c-' + (bloco ? bloco.cor : 'violeta');
+  const st = salmoStore(n);
+  const anterior = SALMOS.lista.find((x) => x.n === n - 1), proximo = SALMOS.lista.find((x) => x.n === n + 1);
+
+  app.innerHTML = `
+    <div class="detail-head"><button class="back-btn" id="back">←</button>
+      <div><div class="detail-title">Salmo ${s.n}</div><div class="detail-kicker">${bloco ? bloco.nome + ' · ' + bloco.faixa : ''}</div></div></div>
+    <div class="salmo-tema">${s.t}</div>
+    <div class="meta-chips"><span class="chip">✍️ ${s.a}</span></div>
+    <div class="porque-box"><div class="box-label">Por que foi escrito</div><p>${s.p}</p></div>
+
+    <button class="btn ${st.lido ? 'ghost' : 'accent'} full" id="lidoBtn">${st.lido ? '✓ Salmo lido' : 'Marcar como lido'}</button>
+
+    <p class="bloco-label" style="margin-top:22px">✍️ Minhas anotações</p>
+    <textarea id="salmoNota" class="salmo-nota" placeholder="O que este salmo falou com você? O que quer guardar?">${escapeHtml(st.nota || '')}</textarea>
+
+    <div class="salmo-nav">
+      <button class="btn ghost" id="prevS" ${anterior ? '' : 'disabled'}>‹ Salmo ${n-1}</button>
+      <button class="btn ghost" id="nextS" ${proximo ? '' : 'disabled'}>Salmo ${n+1} ›</button>
+    </div>`;
+  $('back').onclick = () => { app.className = 'app'; setView('salmos'); };
+  $('lidoBtn').onclick = () => {
+    st.lido = !st.lido; save();
+    const b = $('lidoBtn'); b.className = `btn ${st.lido ? 'ghost' : 'accent'} full`;
+    b.textContent = st.lido ? '✓ Salmo lido' : 'Marcar como lido';
+    if (st.lido) { celebrar(); toast('Salmo ' + n + ' lido ✓'); }
+  };
+  const ta = $('salmoNota'); let timer;
+  const salvar = () => { st.nota = ta.value; if (!st.nota.trim() && !st.lido) delete store.salmos[n]; save(); };
+  ta.addEventListener('input', () => { clearTimeout(timer); timer = setTimeout(salvar, 500); });
+  ta.addEventListener('blur', () => { clearTimeout(timer); salvar(); });
+  if (anterior) $('prevS').onclick = () => setView('salmo', n - 1);
+  if (proximo) $('nextS').onclick = () => setView('salmo', n + 1);
+}
+
 // ---------- Rotina (calendário de disciplinas) ----------
 const HABITOS = [
   { key: 'biblia', emoji: '📖', nome: 'Li a Bíblia', campo: 'text', ph: 'O que li hoje...' },
@@ -475,8 +578,9 @@ function openBackup() {
   $('importInfo').hidden = true;
 }
 function exportBackup() {
-  const payload = { app: 'lumen', version: 3, exportedAt: new Date().toISOString(),
-    books: store.books, guides: store.guides, studies: store.studies, legacyEntries: store.legacyEntries, legacyBooks: store.legacyBooks };
+  const payload = { app: 'lumen', version: 4, exportedAt: new Date().toISOString(),
+    books: store.books, guides: store.guides, salmos: store.salmos, studies: store.studies,
+    legacyEntries: store.legacyEntries, legacyBooks: store.legacyBooks };
   const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
   const a = el('a'); a.href = URL.createObjectURL(blob); a.download = `lumen-backup-${keyOf(new Date())}.json`; a.click(); URL.revokeObjectURL(a.href);
   toast('Backup exportado ✓');
@@ -494,6 +598,8 @@ async function importBackup(file) {
     if (p.guides) for (const gid in p.guides) { const s = p.guides[gid], d = guideStore(gid);
       for (const k in (s.items||{})) if (!d.items[k]) d.items[k] = s.items[k];
       for (const k in (s.answers||{})) if (!d.answers[k]) { d.answers[k] = s.answers[k]; info.respostas++; } }
+    if (p.salmos) for (const sn in p.salmos) { const s = p.salmos[sn], d = salmoStore(sn);
+      if (s.lido) d.lido = true; if ((s.nota||'').trim() && !(d.nota||'').trim()) { d.nota = s.nota; info.notas++; } }
     if (Array.isArray(p.studies)) mesclarStudies(p.studies, info);
     if (p.legacyEntries) store.legacyEntries = Object.assign(store.legacyEntries, p.legacyEntries);
     if (Array.isArray(p.legacyBooks)) mesclarBooks(p.legacyBooks);

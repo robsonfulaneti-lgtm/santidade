@@ -423,6 +423,37 @@ body {
 .day-actions .btn.primary { flex: 1; }
 .day-actions .btn.ghost { flex: 0 0 auto; padding: 14px 18px; }
 
+/* ---------- Os 150 Salmos ---------- */
+.salmos-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 4px; }
+.salmo-chip {
+  display: flex; align-items: center; gap: 9px; text-align: left; cursor: pointer;
+  border: 1px solid var(--line); background: rgba(0,0,0,.2); color: var(--ink);
+  border-radius: 13px; padding: 10px 11px; font: inherit; transition: transform .14s, border-color .2s;
+}
+.salmo-chip:active { transform: scale(.96); }
+.salmo-chip.feito { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 13%, transparent); }
+.sc-n {
+  flex: none; min-width: 30px; height: 30px; padding: 0 6px; border-radius: 9px;
+  background: rgba(255,255,255,.07); color: var(--accent);
+  font-size: 13px; font-weight: 900; display: grid; place-items: center;
+}
+.salmo-chip.feito .sc-n { background: var(--accent); color: #0a0a14; }
+.sc-t { font-size: 11.5px; line-height: 1.35; color: var(--muted); min-width: 0; overflow-wrap: anywhere; }
+.salmo-chip.feito .sc-t { color: var(--ink); }
+
+.salmo-tema { font-size: 19px; font-weight: 800; line-height: 1.3; margin: 2px 0 12px; }
+.porque-box { padding: 15px; border-radius: 15px; margin-bottom: 18px; border: 1px solid var(--accent); background: color-mix(in srgb, var(--accent) 9%, transparent); }
+.porque-box p { margin: 0; font-size: 14.5px; line-height: 1.6; }
+.salmo-nota {
+  width: 100%; min-height: 150px; resize: vertical; background: rgba(0,0,0,.3); color: var(--ink);
+  border: 1px solid var(--line); border-radius: 14px; padding: 13px 14px;
+  font: inherit; font-size: 14.5px; line-height: 1.6;
+}
+.salmo-nota::placeholder { color: var(--muted); opacity: .75; }
+.salmo-nav { display: flex; gap: 10px; margin-top: 18px; }
+.salmo-nav .btn { flex: 1; min-width: 0; font-size: 13px; padding: 12px 8px; white-space: nowrap; }
+.salmo-nav .btn[disabled] { opacity: .35; pointer-events: none; }
+
 /* ---------- Reduz movimento ---------- */
 @media (prefers-reduced-motion: reduce) {
   * { animation-duration: .001ms !important; animation-iteration-count: 1 !important; transition-duration: .05ms !important; }
