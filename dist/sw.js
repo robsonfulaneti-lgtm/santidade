@@ -1,12 +1,13 @@
 // Service worker do Lumen — cache offline do app (totalmente estático).
 // Estratégia "rede primeiro": online sempre pega a versão nova;
 // offline usa o cache. Evita ficar preso em versão antiga.
-const CACHE = 'lumen-v5';
+const CACHE = 'lumen-v6';
 const ASSETS = [
   './',
   './index.html',
   './styles.css',
   './biblia.js',
+  './salmos.js',
   './guides.js',
   './app.js',
   './manifest.webmanifest',
