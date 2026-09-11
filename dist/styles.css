@@ -149,6 +149,7 @@ body {
 .c-ouro { --accent: var(--ouro); }
 .c-verde { --accent: var(--verde); }
 .c-azul { --accent: var(--azul); }
+.c-rosa { --accent: var(--rosa); }
 
 /* ---------- Detalhe do guia ---------- */
 .detail-head { display: flex; align-items: center; gap: 12px; margin-bottom: 6px; }
