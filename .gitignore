@@ -12,3 +12,6 @@ node_modules/
 
 # pacote pronto do Netlify (gerado)
 lumen-netlify.zip
+
+# Local Netlify folder
+.netlify
