@@ -460,3 +460,10 @@ body {
   * { animation-duration: .001ms !important; animation-iteration-count: 1 !important; transition-duration: .05ms !important; }
   .blob { animation: none; }
 }
+
+/* ---------- Diário: livros lidos ---------- */
+.livro-lido { width: 100%; text-align: left; font: inherit; color: var(--ink); }
+.livro-lido.clicavel { cursor: pointer; transition: transform .14s, border-color .2s; }
+.livro-lido.clicavel:active { transform: scale(.98); }
+.ll-meta { font-size: 12px; color: var(--muted); margin-top: 3px; }
+.ll-concl { color: var(--esmeralda); font-weight: 700; }
