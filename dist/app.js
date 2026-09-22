@@ -193,7 +193,9 @@ function renderLivro(bookId) {
   $('back').onclick = () => { app.className = 'app'; setView('biblia'); };
   if ($('irSalmos')) $('irSalmos').onclick = () => setView('colecao', 'salmos');
   $('lidoBtn').onclick = () => {
-    st.lido = !st.lido; if (!st.lido && !(Object.keys(st.respostas || {}).length)) {} save();
+    st.lido = !st.lido;
+    if (st.lido) { if (!st.data) st.data = keyOf(new Date()); } else delete st.data;
+    save();
     const btn = $('lidoBtn'); btn.className = `btn ${st.lido ? 'ghost' : 'accent'} full lido-btn`;
     btn.textContent = st.lido ? '✓ Livro lido' : 'Marcar como lido';
     if (st.lido && livroConcluido(b)) { celebrar(); toast('Livro concluído! 🎉'); }
@@ -368,7 +370,7 @@ function renderDiario() {
   // reflexões escritas nos livros
   const refl = [];
   for (const b of todosLivros()) { const st = store.books[b.id]; if (st?.respostas) for (const q of bookPerguntas(b)) { const v = st.respostas[q.id]; if ((v||'').trim()) refl.push({ ref: b.nome, texto: v }); } }
-  if (!store.studies.length && !refl.length && !store.legacyBooks.length) {
+  if (!store.studies.length && !refl.length && !store.legacyBooks.length && !livrosLidos()) {
     list.innerHTML = `<p class="diario-empty">Nada por aqui ainda.<br>Responda as perguntas de um livro ou guia e suas reflexões aparecem aqui.</p>`;
     return;
   }
@@ -388,11 +390,40 @@ function renderDiario() {
       c.querySelector('.estudo-del').onclick = () => { store.studies = store.studies.filter((x)=>x.id!==s.id); save(); renderDiario(); toast('Removido'); };
       list.appendChild(c); });
   }
-  if (store.legacyBooks.length) {
-    const lbl = el('div', 'diario-group-label'); lbl.textContent = '📕 Livros lidos'; list.appendChild(lbl);
-    store.legacyBooks.forEach((b) => { const c = el('div', 'estudo-item');
-      c.innerHTML = `<div class="estudo-head"><span class="estudo-ref">${escapeHtml(b.title||'')}</span><span class="estudo-time">${b.date?formatShort(b.date):''}</span></div>`; list.appendChild(c); });
+  const lidos = livrosLidosLista();
+  if (lidos.length) {
+    const lbl = el('div', 'diario-group-label'); lbl.textContent = `📕 Livros lidos · ${lidos.length}`; list.appendChild(lbl);
+    lidos.forEach((x) => {
+      const c = el(x.id ? 'button' : 'div', 'estudo-item livro-lido' + (x.id ? ' clicavel' : ''));
+      const meta = x.id ? `${escapeHtml(x.divisao)}${x.concluido ? ' · <span class="ll-concl">✓ concluído</span>' : ''}` : 'registro do app antigo';
+      c.innerHTML = `<div class="estudo-head"><span class="estudo-ref">${escapeHtml(x.nome)}</span><span class="estudo-time">${x.data ? formatShort(x.data) : ''}</span></div>
+        <div class="ll-meta">${meta}</div>`;
+      if (x.id) c.onclick = () => setView('livro', x.id);
+      list.appendChild(c);
+    });
   }
+}
+
+// Normaliza nome de livro para comparar "Tessalonicenses 2" com "2 Tessalonicenses", acentos etc.
+function chaveLivro(nome) {
+  const t = String(nome || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+  return (t.match(/[123]/) || [''])[0] + t.replace(/[^a-z]/g, '');
+}
+// Livros lidos: os marcados na aba Bíblia + os da lista antiga que não correspondem a nenhum deles.
+function livrosLidosLista() {
+  const out = [], vistos = {};
+  for (const div of BIBLIA) for (const b of div.livros) {
+    const st = store.books[b.id]; if (!st?.lido) continue;
+    const item = { id: b.id, nome: b.nome, divisao: div.divisao, data: st.data || '', concluido: livroConcluido(b) };
+    out.push(item); vistos[chaveLivro(b.nome)] = item;
+  }
+  for (const lb of store.legacyBooks) {
+    const k = chaveLivro(lb.title), ja = vistos[k];
+    if (ja) { if (!ja.data && lb.date) ja.data = lb.date; continue; } // mesmo livro: aproveita a data antiga
+    const item = { id: null, nome: lb.title || '', divisao: '', data: lb.date || '', concluido: false };
+    out.push(item); vistos[k] = item;
+  }
+  return out.sort((a, b) => (b.data || '').localeCompare(a.data || ''));
 }
 
 // ---------- Coleções (Salmos, Parábolas...) — mecanismo genérico ----------
@@ -630,7 +661,7 @@ async function importBackup(file) {
   // Formato atual (v2 em diante) — books/guides são objetos (mapas), não arrays
   if (!ehAntigo) {
     if (p.books && !Array.isArray(p.books)) for (const bid in p.books) { const s = p.books[bid], d = bookStore(bid);
-      if (s.lido) d.lido = true; for (const k in (s.respostas||{})) if (!d.respostas[k]) { d.respostas[k] = s.respostas[k]; info.respostas++; } info.livros++; }
+      if (s.lido) d.lido = true; if (s.data && !d.data) d.data = s.data; for (const k in (s.respostas||{})) if (!d.respostas[k]) { d.respostas[k] = s.respostas[k]; info.respostas++; } info.livros++; }
     if (p.guides) for (const gid in p.guides) { const s = p.guides[gid], d = guideStore(gid);
       for (const k in (s.items||{})) if (!d.items[k]) d.items[k] = s.items[k];
       for (const k in (s.answers||{})) if (!d.answers[k]) { d.answers[k] = s.answers[k]; info.respostas++; } }
