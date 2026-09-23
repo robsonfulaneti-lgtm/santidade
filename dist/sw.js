@@ -1,7 +1,7 @@
 // Service worker do Santidade — cache offline do app (totalmente estático).
 // Estratégia "rede primeiro": online sempre pega a versão nova;
 // offline usa o cache. Evita ficar preso em versão antiga.
-const CACHE = 'santidade-v9';
+const CACHE = 'santidade-v10';
 const ASSETS = [
   './',
   './index.html',
@@ -9,6 +9,8 @@ const ASSETS = [
   './biblia.js',
   './salmos.js',
   './parabolas.js',
+  './proverbios.js',
+  './tiago.js',
   './guides.js',
   './app.js',
   './manifest.webmanifest',
