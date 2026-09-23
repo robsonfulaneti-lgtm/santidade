@@ -7,11 +7,12 @@
 
 const $ = (id) => document.getElementById(id);
 const el = (t, c) => { const e = document.createElement(t); if (c) e.className = c; return e; };
+const ICON_VOLTAR = '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>';
 const LS = 'santidade_store';
 const LS_ANTIGO = 'lumen_store'; // versão anterior: migramos os dados sem apagar
 
 // ---------- Estado (mesma chave de antes: preserva Paulo) ----------
-let store = { books: {}, guides: {}, salmos: {}, parabolas: {}, studies: [], legacyEntries: {}, legacyBooks: [] };
+let store = { books: {}, guides: {}, salmos: {}, parabolas: {}, proverbios: {}, tiago: {}, studies: [], legacyEntries: {}, legacyBooks: [] };
 
 function load() {
   try {
@@ -170,7 +171,7 @@ function renderLivro(bookId) {
 
   app.innerHTML = `
     <div class="detail-head">
-      <button class="back-btn" id="back">←</button>
+      <button class="back-btn" id="back" aria-label="Voltar">${ICON_VOLTAR}</button>
       <div><div class="detail-title">${b.nome}</div><div class="detail-kicker">${b.divisao} · ${b.testamento}</div></div>
     </div>
 
@@ -262,7 +263,7 @@ function renderGuia(guiaId) {
   const app = $('app'); app.className = 'app c-' + guia.cor;
   const r = guideTotals(guia);
   app.innerHTML = `
-    <div class="detail-head"><button class="back-btn" id="back">←</button>
+    <div class="detail-head"><button class="back-btn" id="back" aria-label="Voltar">${ICON_VOLTAR}</button>
       <div><div class="detail-title">${guia.emoji} ${guia.titulo}</div></div></div>
     <p class="detail-sub">${guia.resumo}</p>
     <div class="detail-progress"><div class="progress-track"><span class="progress-fill" id="gFill"></span></div>
@@ -332,7 +333,7 @@ function guiaProgresso(guia, et, body) {
 // ---------- Aprender: a grande história ----------
 function renderHistoria() {
   const app = $('app');
-  app.innerHTML = `<div class="detail-head"><button class="back-btn" id="back">←</button>
+  app.innerHTML = `<div class="detail-head"><button class="back-btn" id="back" aria-label="Voltar">${ICON_VOLTAR}</button>
       <div><div class="detail-title">🌌 ${HISTORIA.titulo}</div></div></div>
     <p class="detail-sub">${HISTORIA.intro}</p><div id="atos"></div>`;
   $('back').onclick = () => setView('inicio');
@@ -348,7 +349,7 @@ function renderHistoria() {
 // ---------- Aprender: como estudar ----------
 function renderMetodo() {
   const app = $('app');
-  app.innerHTML = `<div class="detail-head"><button class="back-btn" id="back">←</button>
+  app.innerHTML = `<div class="detail-head"><button class="back-btn" id="back" aria-label="Voltar">${ICON_VOLTAR}</button>
       <div><div class="detail-title">🧭 ${METODO.titulo}</div></div></div>
     <p class="detail-sub">${METODO.intro}</p><div id="passos"></div>
     <p class="bloco-label" style="margin-top:20px">💡 Dicas</p><ul class="dicas">${METODO.dicas.map((d)=>`<li>${d}</li>`).join('')}</ul>`;
@@ -449,6 +450,24 @@ const COLECOES = {
     navLabel: (i) => `Parábola ${i.n}`, marcar: 'Marcar como estudada', marcado: '✓ Parábola estudada',
     placeholder: 'O que esta parábola falou com você? Como aplicar?',
   },
+  proverbios: {
+    id: 'proverbios', titulo: 'Provérbios', emoji: '🪔', cor: 'ambar', unidade: 'capítulos',
+    dados: () => PROVERBIOS,
+    resumoCard: 'Os 31 capítulos, um por dia do mês: sobre o que cada um fala, o versículo-chave e uma pergunta para aplicar.',
+    tituloItem: (i) => `Provérbios ${i.n}`, tema: (i) => i.t, chips: (i) => [`✍️ ${i.a}`, `🔑 ${i.ref}`],
+    caixas: (i) => [{ label: 'Versículo-chave', texto: i.v }, { label: 'Sobre o capítulo', texto: i.p }, { label: 'Para refletir', texto: i.q }],
+    navLabel: (i) => `Provérbios ${i.n}`, marcar: 'Marcar como lido', marcado: '✓ Capítulo lido',
+    placeholder: 'O que Deus falou com você neste capítulo? Como vai aplicar?',
+  },
+  tiago: {
+    id: 'tiago', titulo: 'A carta de Tiago', emoji: '🛠️', cor: 'esmeralda', unidade: 'passagens',
+    dados: () => TIAGO,
+    resumoCard: 'A fé que se vê na prática: a carta inteira em 17 passagens, com explicação e pergunta para aplicar.',
+    tituloItem: (i) => i.t, tema: (i) => i.v, chips: (i) => [`📖 Tiago ${i.ref}`], chipNum: (i) => i.ref,
+    caixas: (i) => [{ label: 'O que Tiago está dizendo', texto: i.p }, { label: 'Para refletir', texto: i.q }],
+    navLabel: (i) => `Tiago ${i.ref}`, marcar: 'Marcar como estudada', marcado: '✓ Passagem estudada',
+    placeholder: 'O que esta passagem falou com você? Como vai praticar?',
+  },
 };
 function colCfg(cid) { return COLECOES[cid]; }
 function colStore(cid, n) { if (!store[cid]) store[cid] = {}; if (!store[cid][n]) store[cid][n] = { lido: false, nota: '' }; return store[cid][n]; }
@@ -463,7 +482,7 @@ function renderColecao(cid) {
   const D = cfg.dados(); const app = $('app');
   const total = colTotal(cfg), feitos = colFeitos(cfg);
   app.innerHTML = `
-    <div class="detail-head"><button class="back-btn" id="back">←</button>
+    <div class="detail-head"><button class="back-btn" id="back" aria-label="Voltar">${ICON_VOLTAR}</button>
       <div><div class="detail-title">${cfg.emoji} ${cfg.titulo}</div><div class="detail-kicker">${feitos} de ${total} ${cfg.unidade}</div></div></div>
     <p class="detail-sub">${D.intro}</p>
     <div class="detail-progress"><div class="progress-track"><span class="progress-fill" id="cFill"></span></div>
@@ -491,7 +510,7 @@ function renderColBloco(cfg, b) {
     const grid = el('div', 'salmos-grid');
     cfg.dados().lista.filter((i) => i.n >= b.de && i.n <= b.ate).forEach((i) => {
       const chip = el('button', 'salmo-chip' + (colFeito(cfg.id, i.n) ? ' feito' : ''));
-      chip.innerHTML = `<span class="sc-n">${i.n}</span><span class="sc-t">${i.t}</span>`;
+      chip.innerHTML = `<span class="sc-n">${cfg.chipNum ? cfg.chipNum(i) : i.n}</span><span class="sc-t">${i.t}</span>`;
       chip.onclick = () => setView('item', { cid: cfg.id, n: i.n });
       grid.appendChild(chip);
     });
@@ -514,7 +533,7 @@ function renderColItem(arg) {
   const caixas = cfg.caixas(i).map((c) => `<div class="porque-box"><div class="box-label">${c.label}</div><p>${c.texto}</p></div>`).join('');
 
   app.innerHTML = `
-    <div class="detail-head"><button class="back-btn" id="back">←</button>
+    <div class="detail-head"><button class="back-btn" id="back" aria-label="Voltar">${ICON_VOLTAR}</button>
       <div><div class="detail-title">${cfg.tituloItem(i)}</div><div class="detail-kicker">${bloco ? bloco.nome + ' · ' + bloco.faixa : cfg.titulo}</div></div></div>
     <div class="salmo-tema">${cfg.tema(i)}</div>
     <div class="meta-chips">${chips}</div>
