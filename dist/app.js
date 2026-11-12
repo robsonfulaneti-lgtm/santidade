@@ -74,7 +74,35 @@ function ringSVG(pct, size, stroke, id) {
 }
 
 // ---------- Router ----------
-function setView(view, arg) {
+// ---------- Histórico: o gesto/botão "voltar" do Android volta uma tela ----------
+// Cada tela vira uma entrada no histórico do navegador. opts.pop = veio do
+// voltar (não empilha); opts.replace = troca a tela atual sem empilhar.
+let vistaAtual = '', renderizando = false;
+function setView(view, arg, opts = {}) {
+  const replace = opts.replace || renderizando; // redirecionamento dentro de uma tela não empilha
+  if (!opts.pop) {
+    const base = history.state || { d: 0 };
+    const st = { view, arg, d: replace ? (base.d || 0) : (base.d || 0) + 1 };
+    replace ? history.replaceState(st, '') : history.pushState(st, '');
+  }
+  vistaAtual = JSON.stringify({ view, arg });
+  renderizando = true;
+  try { renderView(view, arg); } finally { renderizando = false; }
+}
+// Botões "voltar" do app: usam o histórico quando há tela anterior; senão vão ao destino padrão.
+function voltar(view, arg) {
+  if ((history.state?.d || 0) > 0) history.back(); else setView(view, arg, { replace: true });
+}
+// Painéis (backup, dia da rotina) também ocupam uma entrada: o voltar os fecha.
+function abrirPainel(id) { $(id).hidden = false; history.pushState({ ...(history.state || {}), painel: id, d: (history.state?.d || 0) + 1 }, ''); }
+function fecharPainel(id) { if (history.state?.painel === id) history.back(); else $(id).hidden = true; }
+window.addEventListener('popstate', (e) => {
+  ['backupSheet', 'daySheet'].forEach((id) => { if (!$(id).hidden) $(id).hidden = true; });
+  openDayKey = null;
+  const st = e.state; if (!st || !st.view) return;
+  if (JSON.stringify({ view: st.view, arg: st.arg }) !== vistaAtual) setView(st.view, st.arg, { pop: true });
+});
+function renderView(view, arg) {
   document.querySelectorAll('.tabbtn').forEach((b) => b.classList.toggle('active', b.dataset.view === view));
   const app = $('app'); app.className = 'app';
   app.classList.remove('view-enter'); void app.offsetWidth; app.classList.add('view-enter');
@@ -191,7 +219,7 @@ function renderLivro(bookId) {
 
     <p class="bloco-label" style="margin-top:22px">✍️ Perguntas de reflexão</p>
     <div id="perguntas"></div>`;
-  $('back').onclick = () => { app.className = 'app'; setView('biblia'); };
+  $('back').onclick = () => voltar('biblia');
   if ($('irSalmos')) $('irSalmos').onclick = () => setView('colecao', 'salmos');
   $('lidoBtn').onclick = () => {
     st.lido = !st.lido;
@@ -269,7 +297,7 @@ function renderGuia(guiaId) {
     <div class="detail-progress"><div class="progress-track"><span class="progress-fill" id="gFill"></span></div>
       <span class="progress-label" id="gLabel">${r.feitos}/${r.total}</span></div>
     <div id="etapas"></div>`;
-  $('back').onclick = () => { app.className = 'app'; setView('guias'); };
+  $('back').onclick = () => voltar('guias');
   requestAnimationFrame(() => { $('gFill').style.width = (r.pct * 100) + '%'; });
   const wrap = $('etapas');
   guia.etapas.forEach((et) => wrap.appendChild(renderEtapa(guia, et)));
@@ -336,7 +364,7 @@ function renderHistoria() {
   app.innerHTML = `<div class="detail-head"><button class="back-btn" id="back" aria-label="Voltar">${ICON_VOLTAR}</button>
       <div><div class="detail-title">🌌 ${HISTORIA.titulo}</div></div></div>
     <p class="detail-sub">${HISTORIA.intro}</p><div id="atos"></div>`;
-  $('back').onclick = () => setView('inicio');
+  $('back').onclick = () => voltar('inicio');
   const w = $('atos');
   HISTORIA.atos.forEach((a) => {
     const c = el('div', 'ato-card glass');
@@ -353,7 +381,7 @@ function renderMetodo() {
       <div><div class="detail-title">🧭 ${METODO.titulo}</div></div></div>
     <p class="detail-sub">${METODO.intro}</p><div id="passos"></div>
     <p class="bloco-label" style="margin-top:20px">💡 Dicas</p><ul class="dicas">${METODO.dicas.map((d)=>`<li>${d}</li>`).join('')}</ul>`;
-  $('back').onclick = () => setView('inicio');
+  $('back').onclick = () => voltar('inicio');
   const w = $('passos');
   METODO.passos.forEach((p) => {
     const c = el('div', 'passo-card glass c-' + p.cor);
@@ -488,7 +516,7 @@ function renderColecao(cid) {
     <div class="detail-progress"><div class="progress-track"><span class="progress-fill" id="cFill"></span></div>
       <span class="progress-label">${feitos}/${total}</span></div>
     <div id="blocos"></div>`;
-  $('back').onclick = () => { app.className = 'app'; setView('guias'); };
+  $('back').onclick = () => voltar('guias');
   requestAnimationFrame(() => { $('cFill').style.width = (total ? feitos / total * 100 : 0) + '%'; });
   const wrap = $('blocos');
   D.blocos.forEach((b) => wrap.appendChild(renderColBloco(cfg, b)));
@@ -545,7 +573,7 @@ function renderColItem(arg) {
       <button class="btn ghost" id="prevI" ${anterior ? '' : 'disabled'}>‹ ${anterior ? cfg.navLabel(anterior) : ''}</button>
       <button class="btn ghost" id="nextI" ${proximo ? '' : 'disabled'}>${proximo ? cfg.navLabel(proximo) : ''} ›</button>
     </div>`;
-  $('back').onclick = () => { app.className = 'app'; setView('colecao', cid); };
+  $('back').onclick = () => voltar('colecao', cid);
   $('lidoBtn').onclick = () => {
     st.lido = !st.lido; save();
     const b = $('lidoBtn'); b.className = `btn ${st.lido ? 'ghost' : 'accent'} full`;
@@ -556,8 +584,8 @@ function renderColItem(arg) {
   const salvar = () => { st.nota = ta.value; if (!st.nota.trim() && !st.lido) delete store[cid][n]; save(); };
   ta.addEventListener('input', () => { clearTimeout(timer); timer = setTimeout(salvar, 500); });
   ta.addEventListener('blur', () => { clearTimeout(timer); salvar(); });
-  if (anterior) $('prevI').onclick = () => setView('item', { cid, n: n - 1 });
-  if (proximo) $('nextI').onclick = () => setView('item', { cid, n: n + 1 });
+  if (anterior) $('prevI').onclick = () => setView('item', { cid, n: n - 1 }, { replace: true });
+  if (proximo) $('nextI').onclick = () => setView('item', { cid, n: n + 1 }, { replace: true });
 }
 
 // ---------- Rotina (calendário de disciplinas) ----------
@@ -628,7 +656,7 @@ function openDay(k) {
     card.querySelector('.habit-row').onclick = () => { const on = card.classList.toggle('on'); const f = card.querySelector('.habit-field, .hours-field'); if (f) f.hidden = !on; };
     wrap.appendChild(card);
   }
-  $('daySheet').hidden = false;
+  abrirPainel('daySheet');
 }
 
 function collectDay() {
@@ -649,15 +677,15 @@ function saveDay() {
   const e = collectDay();
   const completa = HABITOS.every((h) => e[h.key]?.done);
   if (Object.keys(e).length) store.legacyEntries[openDayKey] = e; else delete store.legacyEntries[openDayKey];
-  save(); $('daySheet').hidden = true; openDayKey = null;
+  save(); fecharPainel('daySheet'); openDayKey = null;
   renderRotina();
   if (completa) { celebrar(); toast('Dia completo! 🎉'); } else toast('Salvo ✓');
 }
-function clearDay() { if (!openDayKey) return; delete store.legacyEntries[openDayKey]; save(); $('daySheet').hidden = true; openDayKey = null; renderRotina(); toast('Dia limpo'); }
+function clearDay() { if (!openDayKey) return; delete store.legacyEntries[openDayKey]; save(); fecharPainel('daySheet'); openDayKey = null; renderRotina(); toast('Dia limpo'); }
 
 // ---------- Backup ----------
 function openBackup() {
-  $('backupSheet').hidden = false;
+  if ($('backupSheet').hidden) abrirPainel('backupSheet');
   $('backupStats').innerHTML = `<div class="bs"><b>${livrosLidos()}/66</b><small>Livros</small></div>
     <div class="bs"><b>${(window.GUIAS||[]).length}</b><small>Guias</small></div>
     <div class="bs"><b>${store.studies.length}</b><small>Notas</small></div>`;
@@ -733,20 +761,20 @@ function celebrar() {
 // ---------- Eventos ----------
 document.querySelectorAll('.tabbtn').forEach((b)=> b.addEventListener('click', ()=> setView(b.dataset.view)));
 $('backupBtn').onclick = openBackup;
-$('closeBackup').onclick = () => $('backupSheet').hidden = true;
-$('backupSheet').addEventListener('click', (e)=>{ if (e.target.id==='backupSheet') $('backupSheet').hidden=true; });
+$('closeBackup').onclick = () => fecharPainel('backupSheet');
+$('backupSheet').addEventListener('click', (e)=>{ if (e.target.id==='backupSheet') fecharPainel('backupSheet'); });
 $('exportBtn').onclick = exportBackup;
 $('importBtn').onclick = () => $('importFile').click();
 $('importFile').addEventListener('change', (e)=>{ const f=e.target.files[0]; if (f) importBackup(f); e.target.value=''; });
-$('closeDay').onclick = () => { $('daySheet').hidden = true; openDayKey = null; };
+$('closeDay').onclick = () => { fecharPainel('daySheet'); openDayKey = null; };
 $('saveDay').onclick = saveDay;
 $('clearDay').onclick = clearDay;
-$('daySheet').addEventListener('click', (e)=>{ if (e.target.id==='daySheet') { $('daySheet').hidden = true; openDayKey = null; } });
+$('daySheet').addEventListener('click', (e)=>{ if (e.target.id==='daySheet') { fecharPainel('daySheet'); openDayKey = null; } });
 
 // ---------- Init ----------
 load();
 for (const g of (window.GUIAS||[])) for (const et of g.etapas) if (etapaCompleta(g, et)) etapasCompletas[g.id+'-'+et.id] = true;
-setView('inicio');
+setView('inicio', undefined, { replace: true });
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('./sw.js').catch(()=>{});
   // quando uma nova versão assume o controle, recarrega uma vez sozinho
